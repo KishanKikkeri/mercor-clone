@@ -4,9 +4,21 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { CategoryCard } from "@/components/CategoryCard";
 import { JobCard } from "@/components/JobCard";
 import { CTASection } from "@/components/CTASection";
-import { featuredCategories, featuredJobs } from "@/lib/mock-data";
+import {
+  fetchCategories,
+  fetchJobs,
+  featuredCategories,
+  featuredJobs,
+  jobsWithCounts,
+} from "@/lib/contentstack";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/")(({
+  loader: async () => {
+    const [categories, jobs] = await Promise.all([fetchCategories(), fetchJobs()]);
+    const cats = jobsWithCounts(jobs, featuredCategories(categories));
+    const featured = featuredJobs(jobs);
+    return { cats, featured };
+  },
   head: () => ({
     meta: [
       { title: "Mercor — Find work that moves you forward" },
@@ -15,40 +27,20 @@ export const Route = createFileRoute("/")({
         content:
           "Discover opportunities at the world's most innovative companies. Browse open roles across engineering, AI, design, product, and marketing.",
       },
-      { property: "og:title", content: "Mercor — Find work that moves you forward" },
-      {
-        property: "og:description",
-        content:
-          "Discover opportunities at the world's most innovative companies.",
-      },
-      { property: "og:url", content: "/" },
     ],
     links: [{ rel: "canonical", href: "/" }],
   }),
   component: HomePage,
-});
+} as any));
 
 const steps = [
-  {
-    n: "01",
-    title: "Explore Categories",
-    body: "Browse open roles by field of interest and discipline.",
-  },
-  {
-    n: "02",
-    title: "Find the Right Opportunity",
-    body: "Read full job descriptions, team details, and company context.",
-  },
-  {
-    n: "03",
-    title: "Apply",
-    body: "Click Apply on any role and take the next step in your career.",
-  },
+  { n: "01", title: "Explore Categories", body: "Browse open roles by field of interest and discipline." },
+  { n: "02", title: "Find the Right Opportunity", body: "Read full job descriptions, team details, and company context." },
+  { n: "03", title: "Apply", body: "Click Apply on any role and take the next step in your career." },
 ];
 
 function HomePage() {
-  const cats = featuredCategories();
-  const jobs = featuredJobs();
+  const { cats, featured } = (Route as any).useLoaderData();
 
   return (
     <div>
@@ -77,11 +69,15 @@ function HomePage() {
           title="Explore by Category"
           subtitle="Find opportunities in the areas that fit your skills and ambitions."
         />
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {cats.map((c) => (
-            <CategoryCard key={c.id} category={c} />
-          ))}
-        </div>
+        {cats.length === 0 ? (
+          <p className="mt-10 text-slate-400">No categories available yet.</p>
+        ) : (
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {cats.map((c: any) => (
+              <CategoryCard key={c.id} category={c} />
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="border-t border-slate-800 bg-slate-950/40">
@@ -98,19 +94,15 @@ function HomePage() {
               View all jobs →
             </Link>
           </div>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {jobs.map((j) => (
-              <JobCard key={j.id} job={j} />
-            ))}
-          </div>
-          <div className="mt-10 flex justify-center sm:hidden">
-            <Link
-              to="/jobs"
-              className="rounded-md border border-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900"
-            >
-              View All Jobs
-            </Link>
-          </div>
+          {featured.length === 0 ? (
+            <p className="mt-10 text-slate-400">No featured jobs yet.</p>
+          ) : (
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.map((j: any) => (
+                <JobCard key={j.id} job={j} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -118,11 +110,8 @@ function HomePage() {
         <SectionHeader title="How It Works" subtitle="Three simple steps to your next role." align="center" />
         <div className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-3">
           {steps.map((s) => (
-            <div
-              key={s.n}
-              className="rounded-xl border border-slate-800 bg-slate-950/60 p-6"
-            >
-              <div className="text-sm font-mono text-blue-400">{s.n}</div>
+            <div key={s.n} className="rounded-xl border border-slate-800 bg-slate-950/60 p-6">
+              <div className="font-mono text-sm text-blue-400">{s.n}</div>
               <h3 className="mt-3 text-lg font-semibold text-white">{s.title}</h3>
               <p className="mt-2 text-sm text-slate-400">{s.body}</p>
             </div>

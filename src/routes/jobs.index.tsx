@@ -3,54 +3,44 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
 import { JobCard } from "@/components/JobCard";
 import { EmptyState } from "@/components/EmptyState";
-import {
-  JobFilters,
-  defaultJobFilters,
-  type JobFiltersState,
-} from "@/components/JobFilters";
-import { openJobs } from "@/lib/mock-data";
+import { JobFilters, defaultJobFilters, type JobFiltersState } from "@/components/JobFilters";
+import { fetchJobs, openJobs } from "@/lib/contentstack";
 
 export const Route = createFileRoute("/jobs/")({
+  loader: async () => {
+    const jobs = await fetchJobs();
+    return { jobs: openJobs(jobs) };
+  },
   head: () => ({
     meta: [
       { title: "Browse Jobs — Mercor" },
       {
         name: "description",
-        content:
-          "Browse open roles across engineering, AI, design, product, and marketing. Filter by category, work type, employment type, and experience level.",
+        content: "Browse open roles across engineering, AI, design, product, and marketing.",
       },
-      { property: "og:title", content: "Browse Jobs — Mercor" },
-      {
-        property: "og:description",
-        content: "Filter and find your next role across top companies.",
-      },
-      { property: "og:url", content: "/jobs" },
     ],
     links: [{ rel: "canonical", href: "/jobs" }],
   }),
   component: JobsPage,
-});
+} as any);
 
 function JobsPage() {
+  const { jobs } = (Route as any).useLoaderData();
   const [filters, setFilters] = useState<JobFiltersState>(defaultJobFilters);
-  const all = openJobs();
 
   const results = useMemo(() => {
-    return all.filter((j) => {
+    return jobs.filter((j: any) => {
       if (filters.query && !j.title.toLowerCase().includes(filters.query.toLowerCase()))
         return false;
       if (filters.category !== "all" && j.category.slug !== filters.category) return false;
       if (filters.workType !== "all" && j.workType !== filters.workType) return false;
       if (filters.employmentType !== "all" && j.employmentType !== filters.employmentType)
         return false;
-      if (
-        filters.experienceLevel !== "all" &&
-        j.experienceLevel !== filters.experienceLevel
-      )
+      if (filters.experienceLevel !== "all" && j.experienceLevel !== filters.experienceLevel)
         return false;
       return true;
     });
-  }, [all, filters]);
+  }, [jobs, filters]);
 
   return (
     <div>
@@ -59,11 +49,9 @@ function JobsPage() {
         title="Browse every opportunity."
         subtitle="Filter across categories, work types, and experience levels to find your fit."
       />
-
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
           <JobFilters value={filters} onChange={setFilters} />
-
           <div>
             <div className="mb-6 flex items-center justify-between">
               <p className="text-sm text-slate-400">
@@ -71,7 +59,6 @@ function JobsPage() {
                 {results.length === 1 ? "job" : "jobs"}
               </p>
             </div>
-
             {results.length === 0 ? (
               <EmptyState
                 title="No jobs match your filters"
@@ -87,7 +74,7 @@ function JobsPage() {
               />
             ) : (
               <div className="grid gap-5 sm:grid-cols-2">
-                {results.map((j) => (
+                {results.map((j: any) => (
                   <JobCard key={j.id} job={j} />
                 ))}
               </div>
