@@ -13,8 +13,16 @@ export function CategoryCard({ category }: CategoryCardProps) {
       className="group flex h-full flex-col rounded-xl border border-slate-800 bg-slate-950/60 p-6 transition-all hover:border-blue-500/40 hover:bg-slate-900"
     >
       <div className="flex items-center justify-between">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-2xl">
-          {category.icon}
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-800 bg-slate-900">
+          {category.icon?.startsWith("http") ? (
+            <img
+              src={category.icon}
+              alt={category.name}
+              className="h-7 w-7 object-contain"
+            />
+          ) : (
+            <span className="text-2xl">{category.icon}</span>
+          )}
         </div>
         <span className="rounded-full border border-slate-800 bg-slate-900 px-2.5 py-1 text-xs font-medium text-slate-300">
           {category.jobCount} Jobs

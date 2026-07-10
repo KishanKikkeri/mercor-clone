@@ -1,9 +1,3 @@
-/**
- * lib/contentstack.ts
- * All Contentstack API calls — drop-in replacement for mock-data.ts
- * Uses the @contentstack/delivery-sdk (v5)
- */
-
 import type { Category, Company, Job, GlobalSettings } from "./types";
 
 const API_KEY = import.meta.env.VITE_CS_API_KEY as string;
@@ -11,33 +5,20 @@ const DELIVERY_TOKEN = import.meta.env.VITE_CS_DELIVERY_TOKEN as string;
 const ENVIRONMENT = import.meta.env.VITE_CS_ENV as string;
 const BASE_URL = `https://cdn.contentstack.io/v3`;
 
-// ─── Raw Contentstack entry shapes ────────────────────────────────────────────
+// ─── Raw shapes ───────────────────────────────────────────────────────────────
 
-interface CSFile {
-  url: string;
-  filename?: string;
-}
-
-interface CSLink {
-  href: string;
-  title: string;
-}
+interface CSFile { url: string }
+interface CSLink { href: string; title: string }
 
 interface CSCategoryEntry {
-  uid: string;
-  url: string;
-  title: string;
-  slug?: string;
+  uid: string; url: string; title: string;
   short_description: string;
   category_icon?: CSFile;
   featured_category: boolean;
 }
 
 interface CSCompanyEntry {
-  uid: string;
-  url: string;
-  title: string;
-  slug?: string;
+  uid: string; url: string; title: string;
   company_logo?: CSFile;
   company_description: string;
   industry: string;
@@ -45,14 +26,12 @@ interface CSCompanyEntry {
   headquarters: string;
 }
 
+// Jobs reference company/category as { uid: string } only — no nested data
 interface CSJobEntry {
-  uid: string;
-  url: string;
-  title: string;
-  slug?: string;
+  uid: string; url: string; title: string;
   short_description: string;
-  company: CSCompanyEntry[];
-  category: CSCategoryEntry[];
+  company: { uid: string }[];
+  category: { uid: string }[];
   location: string;
   work_type: string;
   employment_type: string;
@@ -79,9 +58,13 @@ interface CSGlobalSettingsEntry {
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
 
-async function csGet<T>(contentType: string, params: Record<string, string> = {}): Promise<T[]> {
+async function csGet<T>(
+  contentType: string,
+  params: Record<string, string> = {}
+): Promise<T[]> {
   const url = new URL(`${BASE_URL}/content_types/${contentType}/entries`);
   url.searchParams.set("environment", ENVIRONMENT);
+  url.searchParams.set("locale", "en-us");
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, v);
   }
@@ -94,7 +77,11 @@ async function csGet<T>(contentType: string, params: Record<string, string> = {}
   });
 
   if (!res.ok) {
-    console.error(`Contentstack error [${contentType}]:`, res.status, await res.text());
+    console.error(
+      `Contentstack error [${contentType}]:`,
+      res.status,
+      await res.text()
+    );
     return [];
   }
 
@@ -102,25 +89,14 @@ async function csGet<T>(contentType: string, params: Record<string, string> = {}
   return (data.entries ?? []) as T[];
 }
 
-async function csGetSingle<T>(contentType: string, params: Record<string, string> = {}): Promise<T | null> {
-  const entries = await csGet<T>(contentType, params);
-  return entries[0] ?? null;
-}
+// ─── Slug helper ──────────────────────────────────────────────────────────────
 
-async function csGetByUrl<T>(contentType: string, entryUrl: string): Promise<T | null> {
-  const entries = await csGet<T>(contentType, { "query": JSON.stringify({ url: entryUrl }) });
-  return entries[0] ?? null;
-}
-
-// ─── Slug helpers ─────────────────────────────────────────────────────────────
-
-function slugFrom(entry: { url?: string; slug?: string; uid: string }): string {
+function slugFrom(entry: { url?: string; uid: string }): string {
   if (entry.url) return entry.url.replace(/^\//, "");
-  if (entry.slug) return entry.slug;
   return entry.uid;
 }
 
-// ─── Transform functions ──────────────────────────────────────────────────────
+// ─── Transforms ───────────────────────────────────────────────────────────────
 
 function transformCategory(e: CSCategoryEntry): Category {
   return {
@@ -130,7 +106,7 @@ function transformCategory(e: CSCategoryEntry): Category {
     shortDescription: e.short_description ?? "",
     icon: e.category_icon?.url ?? "🏢",
     featured: e.featured_category ?? false,
-    jobCount: 0, // computed separately
+    jobCount: 0,
   };
 }
 
@@ -139,7 +115,9 @@ function transformCompany(e: CSCompanyEntry): Company {
     id: e.uid,
     name: e.title,
     slug: slugFrom(e),
-    logo: e.company_logo?.url ?? `https://api.dicebear.com/7.x/shapes/svg?seed=${e.title}&backgroundColor=1e293b`,
+    logo:
+      e.company_logo?.url ??
+      `https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(e.title)}&backgroundColor=1e293b`,
     description: e.company_description ?? "",
     industry: e.industry ?? "",
     website: e.company_website?.href ?? "#",
@@ -150,18 +128,27 @@ function transformCompany(e: CSCompanyEntry): Company {
 function splitLines(raw: string): string[] {
   if (!raw) return [];
   return raw
-    .split(/\n|\//)
+    .split("\n")
     .map((s) => s.trim())
     .filter(Boolean);
 }
 
-function transformJob(e: CSJobEntry, allCategories: Category[], allCompanies: Company[]): Job | null {
-  const rawCategory = e.category?.[0];
-  const rawCompany = e.company?.[0];
-  if (!rawCategory || !rawCompany) return null;
+function transformJob(
+  e: CSJobEntry,
+  categoryMap: Map<string, Category>,
+  companyMap: Map<string, Company>
+): Job | null {
+  const categoryUid = e.category?.[0]?.uid;
+  const companyUid = e.company?.[0]?.uid;
 
-  const category = allCategories.find((c) => c.id === rawCategory.uid) ?? transformCategory(rawCategory);
-  const company = allCompanies.find((c) => c.id === rawCompany.uid) ?? transformCompany(rawCompany);
+  const category = categoryUid ? categoryMap.get(categoryUid) : undefined;
+  const company = companyUid ? companyMap.get(companyUid) : undefined;
+
+  // Skip jobs where references couldn't be resolved
+  if (!category || !company) {
+    console.warn(`Job "${e.title}" skipped — missing category or company reference`);
+    return null;
+  }
 
   return {
     id: e.uid,
@@ -175,7 +162,9 @@ function transformJob(e: CSJobEntry, allCategories: Category[], allCompanies: Co
     employmentType: (e.employment_type as Job["employmentType"]) ?? "Full-time",
     experienceLevel: (e.experience_level as Job["experienceLevel"]) ?? "Mid Level",
     salaryText: e.salary_text ?? "",
-    skills: e.skills ? e.skills.split(",").map((s) => s.trim()).filter(Boolean) : [],
+    skills: e.skills
+      ? e.skills.split(",").map((s) => s.trim()).filter(Boolean)
+      : [],
     aboutTheRole: e.about_the_role ?? "",
     responsibilities: splitLines(e.responsibilities),
     requirements: splitLines(e.requirements),
@@ -188,9 +177,7 @@ function transformJob(e: CSJobEntry, allCategories: Category[], allCompanies: Co
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export async function fetchCategories(): Promise<Category[]> {
-  const entries = await csGet<CSCategoryEntry>("category", {
-    include_count: "true",
-  });
+  const entries = await csGet<CSCategoryEntry>("category");
   return entries.map(transformCategory);
 }
 
@@ -200,22 +187,25 @@ export async function fetchCompanies(): Promise<Company[]> {
 }
 
 export async function fetchJobs(): Promise<Job[]> {
+  // Fetch all three in parallel — NO include params on jobs
   const [rawJobs, categories, companies] = await Promise.all([
-    csGet<CSJobEntry>("job", {
-      include: "company,category",
-      include_reference_content_type_uid: "true",
-    }),
+    csGet<CSJobEntry>("job"),
     fetchCategories(),
     fetchCompanies(),
   ]);
 
+  // Build lookup maps by UID for O(1) access
+  const categoryMap = new Map(categories.map((c) => [c.id, c]));
+  const companyMap = new Map(companies.map((c) => [c.id, c]));
+
   return rawJobs
-    .map((e) => transformJob(e, categories, companies))
+    .map((e) => transformJob(e, categoryMap, companyMap))
     .filter((j): j is Job => j !== null);
 }
 
 export async function fetchGlobalSettings(): Promise<GlobalSettings | null> {
-  const entry = await csGetSingle<CSGlobalSettingsEntry>("global_settings");
+  const entries = await csGet<CSGlobalSettingsEntry>("global_settings");
+  const entry = entries[0];
   if (!entry) return null;
 
   return {
@@ -228,7 +218,7 @@ export async function fetchGlobalSettings(): Promise<GlobalSettings | null> {
   };
 }
 
-// ─── Selector helpers (mirror mock-data.ts exports) ──────────────────────────
+// ─── Selectors ────────────────────────────────────────────────────────────────
 
 export function openJobs(jobs: Job[]): Job[] {
   return jobs.filter((j) => j.status === "Open");
@@ -250,17 +240,28 @@ export function jobBySlug(jobs: Job[], slug: string): Job | undefined {
   return jobs.find((j) => j.slug === slug);
 }
 
-export function categoryBySlug(categories: Category[], slug: string): Category | undefined {
+export function categoryBySlug(
+  categories: Category[],
+  slug: string
+): Category | undefined {
   return categories.find((c) => c.slug === slug);
 }
 
-export function similarJobs(jobs: Job[], jobId: string, categorySlug: string, limit = 3): Job[] {
+export function similarJobs(
+  jobs: Job[],
+  jobId: string,
+  categorySlug: string,
+  limit = 3
+): Job[] {
   return openJobs(jobs)
     .filter((j) => j.category.slug === categorySlug && j.id !== jobId)
     .slice(0, limit);
 }
 
-export function jobsWithCounts(jobs: Job[], categories: Category[]): Category[] {
+export function jobsWithCounts(
+  jobs: Job[],
+  categories: Category[]
+): Category[] {
   return categories.map((cat) => ({
     ...cat,
     jobCount: openJobs(jobs).filter((j) => j.category.slug === cat.slug).length,
