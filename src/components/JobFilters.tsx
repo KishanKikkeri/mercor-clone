@@ -1,4 +1,4 @@
-import { categories } from "@/lib/mock-data";
+import type { Category } from "@/lib/types";
 
 export interface JobFiltersState {
   query: string;
@@ -19,38 +19,39 @@ export const defaultJobFilters: JobFiltersState = {
 interface JobFiltersProps {
   value: JobFiltersState;
   onChange: (v: JobFiltersState) => void;
+  categories: Category[];
 }
 
 const selectClass =
-  "mt-1.5 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
+  "mt-1.5 w-full rounded-lg border border-purple-100 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all duration-200";
 
-const labelClass = "text-xs font-medium uppercase tracking-wide text-slate-400";
+const labelClass = "text-xs font-bold uppercase tracking-wider text-slate-500";
 
-export function JobFilters({ value, onChange }: JobFiltersProps) {
+export function JobFilters({ value, onChange, categories }: JobFiltersProps) {
   const set = <K extends keyof JobFiltersState>(k: K, v: JobFiltersState[K]) =>
     onChange({ ...value, [k]: v });
 
   return (
-    <aside className="rounded-xl border border-slate-800 bg-slate-950/60 p-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">Filters</h3>
+    <aside className="rounded-xl border border-purple-100 bg-white p-5 shadow-sm h-fit">
+      <div className="flex items-center justify-between pb-3 border-b border-purple-50">
+        <h3 className="text-sm font-bold text-slate-900">Filters</h3>
         <button
           type="button"
           onClick={() => onChange(defaultJobFilters)}
-          className="text-xs font-medium text-blue-400 hover:text-blue-300"
+          className="text-xs font-semibold text-purple-600 hover:text-purple-700 transition-colors"
         >
-          Clear
+          Clear All
         </button>
       </div>
 
-      <div className="mt-5 space-y-4">
+      <div className="mt-5 space-y-5">
         <div>
           <label className={labelClass}>Search</label>
           <input
             type="text"
             value={value.query}
             onChange={(e) => set("query", e.target.value)}
-            placeholder="Job title..."
+            placeholder="Job title or keyword..."
             className={selectClass}
           />
         </div>
@@ -78,10 +79,10 @@ export function JobFilters({ value, onChange }: JobFiltersProps) {
             onChange={(e) => set("workType", e.target.value)}
             className={selectClass}
           >
-            <option value="all">All</option>
-            <option>Remote</option>
-            <option>Hybrid</option>
-            <option>On-site</option>
+            <option value="all">All Work Types</option>
+            <option value="Remote">Remote</option>
+            <option value="Hybrid">Hybrid</option>
+            <option value="On-site">On-site</option>
           </select>
         </div>
 
@@ -92,11 +93,11 @@ export function JobFilters({ value, onChange }: JobFiltersProps) {
             onChange={(e) => set("employmentType", e.target.value)}
             className={selectClass}
           >
-            <option value="all">All</option>
-            <option>Full-time</option>
-            <option>Part-time</option>
-            <option>Contract</option>
-            <option>Internship</option>
+            <option value="all">All Employment Types</option>
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+            <option value="Internship">Internship</option>
           </select>
         </div>
 
@@ -107,11 +108,11 @@ export function JobFilters({ value, onChange }: JobFiltersProps) {
             onChange={(e) => set("experienceLevel", e.target.value)}
             className={selectClass}
           >
-            <option value="all">All</option>
-            <option>Entry Level</option>
-            <option>Mid Level</option>
-            <option>Senior Level</option>
-            <option>Lead</option>
+            <option value="all">All Experience Levels</option>
+            <option value="Entry Level">Entry Level</option>
+            <option value="Mid Level">Mid Level</option>
+            <option value="Senior Level">Senior Level</option>
+            <option value="Lead">Lead</option>
           </select>
         </div>
       </div>

@@ -1,32 +1,32 @@
+
+
 import type { Category, Company, Job, GlobalSettings } from "./types";
 
-const API_KEY = import.meta.env.VITE_CS_API_KEY as string;
-const DELIVERY_TOKEN = import.meta.env.VITE_CS_DELIVERY_TOKEN as string;
-const ENVIRONMENT = import.meta.env.VITE_CS_ENV as string;
+const API_KEY = (process.env.NEXT_PUBLIC_CS_API_KEY || process.env.VITE_CS_API_KEY || process.env.CONTENTSTACK_API_KEY || "") as string;
+const DELIVERY_TOKEN = (process.env.NEXT_PUBLIC_CS_DELIVERY_TOKEN || process.env.VITE_CS_DELIVERY_TOKEN || process.env.CONTENTSTACK_DELIVERY_TOKEN || "") as string;
+const ENVIRONMENT = (process.env.NEXT_PUBLIC_CS_ENV || process.env.VITE_CS_ENV || process.env.CONTENTSTACK_ENVIRONMENT || "") as string;
 const BASE_URL = `https://cdn.contentstack.io/v3`;
 
 // ─── Raw shapes ───────────────────────────────────────────────────────────────
 
-interface CSFile { url: string }
 interface CSLink { href: string; title: string }
 
 interface CSCategoryEntry {
   uid: string; url: string; title: string;
   short_description: string;
-  category_icon?: CSFile;
+  category_icon?: any;
   featured_category: boolean;
 }
 
 interface CSCompanyEntry {
   uid: string; url: string; title: string;
-  company_logo?: CSFile;
+  company_logo?: any;
   company_description: string;
   industry: string;
   company_website?: CSLink;
   headquarters: string;
 }
 
-// Jobs reference company/category as { uid: string } only — no nested data
 interface CSJobEntry {
   uid: string; url: string; title: string;
   short_description: string;
@@ -39,16 +39,16 @@ interface CSJobEntry {
   salary_text: string;
   skills: string;
   about_the_role: string;
-  responsibilities: string;
-  requirements: string;
-  preferred_qualifications: string;
+  responsibilities: any;
+  requirements: any;
+  preferred_qualifications: any;
   job_status: string;
   featured_job: boolean;
 }
 
 interface CSGlobalSettingsEntry {
   uid: string;
-  website_logo?: CSFile;
+  website_logo?: any;
   navigation_links: { label: string; url: string }[];
   footer_description: string;
   footer_links: { label: string; url: string }[];
@@ -62,6 +62,11 @@ async function csGet<T>(
   contentType: string,
   params: Record<string, string> = {}
 ): Promise<T[]> {
+  if (!API_KEY || !DELIVERY_TOKEN) {
+    console.warn(`Contentstack credentials missing for content type: ${contentType}`);
+    return [];
+  }
+
   const url = new URL(`${BASE_URL}/content_types/${contentType}/entries`);
   url.searchParams.set("environment", ENVIRONMENT);
   url.searchParams.set("locale", "en-us");
@@ -69,24 +74,29 @@ async function csGet<T>(
     url.searchParams.set(k, v);
   }
 
-  const res = await fetch(url.toString(), {
-    headers: {
-      api_key: API_KEY,
-      access_token: DELIVERY_TOKEN,
-    },
-  });
+  try {
+    const res = await fetch(url.toString(), {
+      headers: {
+        api_key: API_KEY,
+        access_token: DELIVERY_TOKEN,
+      },
+    });
 
-  if (!res.ok) {
-    console.error(
-      `Contentstack error [${contentType}]:`,
-      res.status,
-      await res.text()
-    );
+    if (!res.ok) {
+      console.error(
+        `Contentstack error [${contentType}]:`,
+        res.status,
+        await res.text()
+      );
+      return [];
+    }
+
+    const data = await res.json();
+    return (data.entries ?? []) as T[];
+  } catch (error) {
+    console.error(`Contentstack network error [${contentType}]:`, error);
     return [];
   }
-
-  const data = await res.json();
-  return (data.entries ?? []) as T[];
 }
 
 // ─── Slug helper ──────────────────────────────────────────────────────────────
@@ -96,28 +106,47 @@ function slugFrom(entry: { url?: string; uid: string }): string {
   return entry.uid;
 }
 
+// Helper to extract image URL from various contentstack formats
+function getImageUrl(file: any): string | undefined {
+  if (!file) return undefined;
+  let url: string | undefined;
+  if (Array.isArray(file)) {
+    url = file[0]?.url;
+  } else if (typeof file === "object") {
+    url = file.url;
+  } else if (typeof file === "string") {
+    url = file;
+  }
+  if (url && url.startsWith("//")) {
+    url = `https:${url}`;
+  }
+  return url;
+}
+
 // ─── Transforms ───────────────────────────────────────────────────────────────
 
 function transformCategory(e: CSCategoryEntry): Category {
+  const iconUrl = getImageUrl(e.category_icon);
   return {
     id: e.uid,
     name: e.title,
     slug: slugFrom(e),
     shortDescription: e.short_description ?? "",
-    icon: e.category_icon?.url ?? "🏢",
+    icon: iconUrl ?? "🏢",
     featured: e.featured_category ?? false,
     jobCount: 0,
   };
 }
 
 function transformCompany(e: CSCompanyEntry): Company {
+  const logoUrl = getImageUrl(e.company_logo);
   return {
     id: e.uid,
     name: e.title,
     slug: slugFrom(e),
     logo:
-      e.company_logo?.url ??
-      `https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(e.title)}&backgroundColor=1e293b`,
+      logoUrl ??
+      `https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(e.title)}&backgroundColor=c084fc`, // soft purple/lavender accent background
     description: e.company_description ?? "",
     industry: e.industry ?? "",
     website: e.company_website?.href ?? "#",
@@ -125,11 +154,17 @@ function transformCompany(e: CSCompanyEntry): Company {
   };
 }
 
-function splitLines(raw: string): string[] {
+function splitLines(raw: any): string[] {
   if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw.map((s) => String(s).trim()).filter(Boolean);
+  }
+  if (typeof raw !== "string") {
+    raw = String(raw);
+  }
   return raw
     .split("\n")
-    .map((s) => s.trim())
+    .map((s: string) => s.trim())
     .filter(Boolean);
 }
 
@@ -187,14 +222,12 @@ export async function fetchCompanies(): Promise<Company[]> {
 }
 
 export async function fetchJobs(): Promise<Job[]> {
-  // Fetch all three in parallel — NO include params on jobs
   const [rawJobs, categories, companies] = await Promise.all([
     csGet<CSJobEntry>("job"),
     fetchCategories(),
     fetchCompanies(),
   ]);
 
-  // Build lookup maps by UID for O(1) access
   const categoryMap = new Map(categories.map((c) => [c.id, c]));
   const companyMap = new Map(companies.map((c) => [c.id, c]));
 
@@ -208,8 +241,10 @@ export async function fetchGlobalSettings(): Promise<GlobalSettings | null> {
   const entry = entries[0];
   if (!entry) return null;
 
+  const logoUrl = getImageUrl(entry.website_logo);
+
   return {
-    logo: entry.website_logo?.url ?? "Mercor",
+    logo: logoUrl ?? "TalentBloom",
     navLinks: entry.navigation_links ?? [],
     footerDescription: entry.footer_description ?? "",
     footerLinks: entry.footer_links ?? [],
