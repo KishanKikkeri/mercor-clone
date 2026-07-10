@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { CategoryCard } from "@/components/CategoryCard";
@@ -11,27 +12,11 @@ import {
   featuredJobs,
   jobsWithCounts,
 } from "@/lib/contentstack";
+import type { Category, Job } from "@/lib/types";
 
-export const Route = createFileRoute("/")(({
-  loader: async () => {
-    const [categories, jobs] = await Promise.all([fetchCategories(), fetchJobs()]);
-    const cats = jobsWithCounts(jobs, featuredCategories(categories));
-    const featured = featuredJobs(jobs);
-    return { cats, featured };
-  },
-  head: () => ({
-    meta: [
-      { title: "Mercor — Find work that moves you forward" },
-      {
-        name: "description",
-        content:
-          "Discover opportunities at the world's most innovative companies. Browse open roles across engineering, AI, design, product, and marketing.",
-      },
-    ],
-    links: [{ rel: "canonical", href: "/" }],
-  }),
+export const Route = createFileRoute("/")({
   component: HomePage,
-} as any));
+});
 
 const steps = [
   { n: "01", title: "Explore Categories", body: "Browse open roles by field of interest and discipline." },
@@ -40,7 +25,24 @@ const steps = [
 ];
 
 function HomePage() {
-  const { cats, featured } = (Route as any).useLoaderData();
+  const [cats, setCats] = useState<Category[]>([]);
+  const [featured, setFeatured] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [categories, jobs] = await Promise.all([fetchCategories(), fetchJobs()]);
+        setCats(jobsWithCounts(jobs, featuredCategories(categories)));
+        setFeatured(featuredJobs(jobs));
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   return (
     <div>
@@ -50,32 +52,23 @@ function HomePage() {
         subtitle="Discover opportunities at the world's most innovative companies."
         size="lg"
       >
-        <Link
-          to="/jobs"
-          className="inline-flex items-center rounded-md bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500"
-        >
+        <Link to="/jobs" className="inline-flex items-center rounded-md bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500">
           Explore Jobs
         </Link>
-        <Link
-          to="/categories"
-          className="inline-flex items-center rounded-md border border-slate-700 bg-transparent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:border-slate-500 hover:bg-slate-900"
-        >
+        <Link to="/categories" className="inline-flex items-center rounded-md border border-slate-700 bg-transparent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:border-slate-500 hover:bg-slate-900">
           Browse Categories
         </Link>
       </PageHero>
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
-        <SectionHeader
-          title="Explore by Category"
-          subtitle="Find opportunities in the areas that fit your skills and ambitions."
-        />
-        {cats.length === 0 ? (
-          <p className="mt-10 text-slate-400">No categories available yet.</p>
+        <SectionHeader title="Explore by Category" subtitle="Find opportunities in the areas that fit your skills and ambitions." />
+        {loading ? (
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[1,2,3].map(i => <div key={i} className="h-40 rounded-xl border border-slate-800 bg-slate-900 animate-pulse" />)}
+          </div>
         ) : (
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {cats.map((c: any) => (
-              <CategoryCard key={c.id} category={c} />
-            ))}
+            {cats.map((c) => <CategoryCard key={c.id} category={c} />)}
           </div>
         )}
       </section>
@@ -83,24 +76,18 @@ function HomePage() {
       <section className="border-t border-slate-800 bg-slate-950/40">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="flex items-end justify-between gap-6">
-            <SectionHeader
-              title="Featured Opportunities"
-              subtitle="Hand-picked roles from teams shipping ambitious work."
-            />
-            <Link
-              to="/jobs"
-              className="hidden shrink-0 text-sm font-medium text-blue-400 hover:text-blue-300 sm:inline"
-            >
+            <SectionHeader title="Featured Opportunities" subtitle="Hand-picked roles from teams shipping ambitious work." />
+            <Link to="/jobs" className="hidden shrink-0 text-sm font-medium text-blue-400 hover:text-blue-300 sm:inline">
               View all jobs →
             </Link>
           </div>
-          {featured.length === 0 ? (
-            <p className="mt-10 text-slate-400">No featured jobs yet.</p>
+          {loading ? (
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {[1,2,3].map(i => <div key={i} className="h-52 rounded-xl border border-slate-800 bg-slate-900 animate-pulse" />)}
+            </div>
           ) : (
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.map((j: any) => (
-                <JobCard key={j.id} job={j} />
-              ))}
+              {featured.map((j) => <JobCard key={j.id} job={j} />)}
             </div>
           )}
         </div>
@@ -119,12 +106,7 @@ function HomePage() {
         </div>
       </section>
 
-      <CTASection
-        headline="Ready to find your next role?"
-        subtitle="Browse open roles across every category."
-        buttonLabel="Browse All Jobs"
-        buttonHref="/jobs"
-      />
+      <CTASection headline="Ready to find your next role?" subtitle="Browse open roles across every category." buttonLabel="Browse All Jobs" buttonHref="/jobs" />
     </div>
   );
 }
