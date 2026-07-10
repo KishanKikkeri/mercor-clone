@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import type { Job } from "@/lib/types";
