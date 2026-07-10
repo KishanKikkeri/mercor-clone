@@ -11,7 +11,9 @@ export function SectionHeader({ title, subtitle, align = "left" }: SectionHeader
         {title.replace(/Mercor/gi, "TalentBloom")}
       </h2>
       {subtitle && (
-        <p className={`mt-3 max-w-2xl text-sm sm:text-base text-slate-500 ${align === "center" ? "mx-auto" : ""}`}>
+        <p
+          className={`mt-3 max-w-2xl text-sm sm:text-base text-slate-500 ${align === "center" ? "mx-auto" : ""}`}
+        >
           {subtitle.replace(/Mercor/gi, "TalentBloom")}
         </p>
       )}

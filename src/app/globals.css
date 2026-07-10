@@ -38,32 +38,32 @@
   --radius: 0.75rem;
   --background: oklch(1 0 0); /* Pure White */
   --foreground: oklch(0.208 0.042 265.755); /* Dark Slate */
-  
+
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.208 0.042 265.755);
-  
+
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.208 0.042 265.755);
-  
+
   --primary: oklch(0.584 0.245 282.846); /* Deep Violet/Purple */
   --primary-foreground: oklch(1 0 0);
-  
+
   --secondary: oklch(0.96 0.03 282); /* Very soft lavender */
   --secondary-foreground: oklch(0.584 0.245 282.846);
-  
+
   --muted: oklch(0.98 0.01 282);
   --muted-foreground: oklch(0.554 0.046 257.417);
-  
+
   --accent: oklch(0.96 0.03 282);
   --accent-foreground: oklch(0.584 0.245 282.846);
-  
+
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  
+
   --border: oklch(0.93 0.02 282); /* Lavender Tinted Border */
   --input: oklch(0.93 0.02 282);
   --ring: oklch(0.75 0.12 282);
-  
+
   --chart-1: oklch(0.584 0.245 282.846);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -90,8 +90,9 @@
 .card-hover-effect:hover {
   transform: translateY(-3px);
   border-color: oklch(0.75 0.12 282 / 50%);
-  box-shadow: 0 10px 25px -5px oklch(0.584 0.245 282.846 / 8%), 
-              0 8px 10px -6px oklch(0.584 0.245 282.846 / 8%);
+  box-shadow:
+    0 10px 25px -5px oklch(0.584 0.245 282.846 / 8%),
+    0 8px 10px -6px oklch(0.584 0.245 282.846 / 8%);
 }
 
 .btn-hover-effect {

@@ -23,7 +23,7 @@ export function Footer() {
               )}
             </div>
             <p className="mt-3 max-w-sm text-sm text-slate-500">
-              {globalSettings.footerDescription?.replace(/Mercor/gi, "TalentBloom") || 
+              {globalSettings.footerDescription?.replace(/Mercor/gi, "TalentBloom") ||
                 "Connecting people with work that matters at the world's most innovative companies."}
             </p>
           </div>
@@ -67,7 +67,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 border-t border-purple-100 pt-6 text-xs text-slate-400">
-          {globalSettings.copyrightText?.replace(/Mercor/gi, "TalentBloom") || 
+          {globalSettings.copyrightText?.replace(/Mercor/gi, "TalentBloom") ||
             `© ${new Date().getFullYear()} TalentBloom. All rights reserved.`}
         </div>
       </div>

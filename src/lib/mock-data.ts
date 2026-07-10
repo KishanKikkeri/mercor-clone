@@ -233,10 +233,7 @@ export const jobs: Job[] = [
       "Partner with research on model quality goals.",
       "Design human-in-the-loop review tooling.",
     ],
-    requirements: [
-      "3+ years of ML or data engineering.",
-      "Comfort with modern Python data tools.",
-    ],
+    requirements: ["3+ years of ML or data engineering.", "Comfort with modern Python data tools."],
     preferredQualifications: ["Prior evaluation or trust-and-safety experience."],
     status: "Open",
     featured: false,
@@ -261,10 +258,7 @@ export const jobs: Job[] = [
       "Extend and maintain our design system.",
       "Drive research and usability studies.",
     ],
-    requirements: [
-      "5+ years designing complex products.",
-      "Strong portfolio of shipped work.",
-    ],
+    requirements: ["5+ years designing complex products.", "Strong portfolio of shipped work."],
     preferredQualifications: ["Experience with developer or technical products."],
     status: "Open",
     featured: true,
@@ -335,8 +329,7 @@ export const globalSettings: GlobalSettings = {
     { label: "Categories", url: "/categories" },
     { label: "About", url: "/about" },
   ],
-  footerDescription:
-    "A modern job platform connecting people with work that moves them forward.",
+  footerDescription: "A modern job platform connecting people with work that moves them forward.",
   footerLinks: [
     { label: "Home", url: "/" },
     { label: "Browse Jobs", url: "/jobs" },
@@ -357,8 +350,7 @@ export const featuredCategories = () => categories.filter((c) => c.featured);
 export const jobsByCategorySlug = (slug: string) =>
   openJobs().filter((j) => j.category.slug === slug);
 export const jobBySlug = (slug: string) => jobs.find((j) => j.slug === slug);
-export const categoryBySlug = (slug: string) =>
-  categories.find((c) => c.slug === slug);
+export const categoryBySlug = (slug: string) => categories.find((c) => c.slug === slug);
 export const similarJobs = (jobId: string, categorySlug: string, limit = 3) =>
   openJobs()
     .filter((j) => j.category.slug === categorySlug && j.id !== jobId)

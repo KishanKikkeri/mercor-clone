@@ -31,7 +31,9 @@ export function JobCard({ job }: JobCardProps) {
         </div>
       </div>
 
-      <p className="mt-4 line-clamp-2 text-sm text-slate-600 leading-relaxed">{job.shortDescription}</p>
+      <p className="mt-4 line-clamp-2 text-sm text-slate-600 leading-relaxed">
+        {job.shortDescription}
+      </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
         <span className="inline-flex items-center gap-1 text-slate-500 font-medium">

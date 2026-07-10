@@ -20,10 +20,10 @@ export default async function JobsPage() {
 
   return (
     <div>
-      <PageHero 
-        eyebrow="Open Roles" 
-        title="Browse every opportunity." 
-        subtitle="Filter across categories, work types, and experience levels to find your fit." 
+      <PageHero
+        eyebrow="Open Roles"
+        title="Browse every opportunity."
+        subtitle="Filter across categories, work types, and experience levels to find your fit."
       />
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <JobsClient initialJobs={activeJobs} categories={categories} />

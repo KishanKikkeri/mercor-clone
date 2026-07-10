@@ -25,8 +25,10 @@ export function JobsClient({ initialJobs, categories }: JobsClientProps) {
       }
       if (filters.category !== "all" && j.category.slug !== filters.category) return false;
       if (filters.workType !== "all" && j.workType !== filters.workType) return false;
-      if (filters.employmentType !== "all" && j.employmentType !== filters.employmentType) return false;
-      if (filters.experienceLevel !== "all" && j.experienceLevel !== filters.experienceLevel) return false;
+      if (filters.employmentType !== "all" && j.employmentType !== filters.employmentType)
+        return false;
+      if (filters.experienceLevel !== "all" && j.experienceLevel !== filters.experienceLevel)
+        return false;
       return true;
     });
   }, [initialJobs, filters]);
@@ -43,12 +45,12 @@ export function JobsClient({ initialJobs, categories }: JobsClientProps) {
         </div>
 
         {results.length === 0 ? (
-          <EmptyState 
-            title="No jobs match your filters" 
+          <EmptyState
+            title="No jobs match your filters"
             description="Try clearing filters or broadening your search."
             action={
-              <button 
-                onClick={() => setFilters(defaultJobFilters)} 
+              <button
+                onClick={() => setFilters(defaultJobFilters)}
                 className="rounded-lg border border-purple-200 bg-white px-4 py-2 text-sm font-semibold text-purple-600 hover:bg-purple-50 transition-colors cursor-pointer"
               >
                 Clear Filters

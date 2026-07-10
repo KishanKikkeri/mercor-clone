@@ -34,12 +34,14 @@ Ensure you have [Node.js](https://nodejs.org/) installed on your machine. This p
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd mercor-clone
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    # or
