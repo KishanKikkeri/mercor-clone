@@ -5,7 +5,17 @@ import type { Category, Company, Job, GlobalSettings } from "./types";
 const API_KEY = (process.env.NEXT_PUBLIC_CS_API_KEY || process.env.VITE_CS_API_KEY || process.env.CONTENTSTACK_API_KEY || "") as string;
 const DELIVERY_TOKEN = (process.env.NEXT_PUBLIC_CS_DELIVERY_TOKEN || process.env.VITE_CS_DELIVERY_TOKEN || process.env.CONTENTSTACK_DELIVERY_TOKEN || "") as string;
 const ENVIRONMENT = (process.env.NEXT_PUBLIC_CS_ENV || process.env.VITE_CS_ENV || process.env.CONTENTSTACK_ENVIRONMENT || "") as string;
-const BASE_URL = `https://cdn.contentstack.io/v3`;
+const API_HOST = (
+  process.env.NEXT_PUBLIC_CONTENTSTACK_CDN ||
+  process.env.CONTENTSTACK_CDN ||
+  process.env.NEXT_PUBLIC_CONTENTSTACK_API_HOST ||
+  process.env.CONTENTSTACK_API_HOST ||
+  process.env.VITE_CS_API_HOST ||
+  "cdn.contentstack.io"
+) as string;
+
+const cleanHost = API_HOST.replace(/^(https?:\/\/)?/, "https://").replace(/\/+$/, "");
+const BASE_URL = cleanHost.endsWith("/v3") ? cleanHost : `${cleanHost}/v3`;
 
 // ─── Raw shapes ───────────────────────────────────────────────────────────────
 
