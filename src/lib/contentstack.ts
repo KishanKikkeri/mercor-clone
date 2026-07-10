@@ -112,7 +112,10 @@ async function csGet<T>(
 // ─── Slug helper ──────────────────────────────────────────────────────────────
 
 function slugFrom(entry: { url?: string; uid: string }): string {
-  if (entry.url) return entry.url.replace(/^\//, "");
+  if (entry.url) {
+    const parts = entry.url.split("/").filter(Boolean);
+    return parts[parts.length - 1] || entry.uid;
+  }
   return entry.uid;
 }
 
