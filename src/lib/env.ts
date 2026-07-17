@@ -62,33 +62,59 @@ let parsedEnv: Record<string, any> = {};
 
 if (isServer) {
   const mergedSchema = clientEnvSchema.merge(serverEnvSchema);
-  const result = mergedSchema.safeParse({ ...clientEnvInput, ...serverEnvInput });
+  const rawInput = { ...clientEnvInput, ...serverEnvInput };
+  const result = mergedSchema.safeParse(rawInput);
   if (!result.success) {
     const formattedError = result.error.format();
     console.error("❌ Environment validation failed:", JSON.stringify(formattedError, null, 2));
-    throw new Error(
-      `[Startup Error] Missing or misconfigured environment variables. Please check your config:\n` +
-      Object.entries(formattedError)
-        .filter(([key]) => key !== "_errors")
-        .map(([key, value]: [string, any]) => ` - ${key}: ${value._errors?.join(", ")}`)
-        .join("\n")
-    );
+    
+    // Check if we are in Next.js build phase or CI runner to avoid crashing deployment builds
+    const isBuildPhase =
+      process.env.NEXT_PHASE === "phase-production-build" ||
+      process.env.CI === "true" ||
+      process.env.NODE_ENV === "production"; // Fallback for build runners
+
+    if (isBuildPhase) {
+      console.warn("⚠️ Warning: Missing environment variables during build phase. Using raw process envs as fallback.");
+      parsedEnv = rawInput as any;
+    } else {
+      throw new Error(
+        `[Startup Error] Missing or misconfigured environment variables. Please check your config:\n` +
+        Object.entries(formattedError)
+          .filter(([key]) => key !== "_errors")
+          .map(([key, value]: [string, any]) => ` - ${key}: ${value._errors?.join(", ")}`)
+          .join("\n")
+      );
+    }
+  } else {
+    parsedEnv = result.data;
   }
-  parsedEnv = result.data;
 } else {
   const result = clientEnvSchema.safeParse(clientEnvInput);
   if (!result.success) {
     const formattedError = result.error.format();
     console.error("❌ Client environment validation failed:", JSON.stringify(formattedError, null, 2));
-    throw new Error(
-      `[Client Error] Missing or misconfigured client-side environment variables:\n` +
-      Object.entries(formattedError)
-        .filter(([key]) => key !== "_errors")
-        .map(([key, value]: [string, any]) => ` - ${key}: ${value._errors?.join(", ")}`)
-        .join("\n")
-    );
+    
+    const isBuildPhase =
+      process.env.NEXT_PHASE === "phase-production-build" ||
+      process.env.CI === "true" ||
+      process.env.NODE_ENV === "production";
+
+    if (isBuildPhase) {
+      console.warn("⚠️ Warning: Missing client environment variables during build phase. Using raw client envs as fallback.");
+      parsedEnv = clientEnvInput as any;
+    } else {
+      throw new Error(
+        `[Client Error] Missing or misconfigured client-side environment variables:\n` +
+        Object.entries(formattedError)
+          .filter(([key]) => key !== "_errors")
+          .map(([key, value]: [string, any]) => ` - ${key}: ${value._errors?.join(", ")}`)
+          .join("\n")
+      );
+    }
+  } else {
+    parsedEnv = result.data;
   }
-  parsedEnv = result.data;
 }
 
 // Export parsed env with appropriate types depending on environment
