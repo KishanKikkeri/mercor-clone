@@ -35,3 +35,9 @@ dist-ssr
 .next/
 next-env.d.ts
 
+# Environment variables
+.env
+
+
+/src/generated/prisma
+*.tsbuildinfo

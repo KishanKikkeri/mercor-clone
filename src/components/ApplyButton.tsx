@@ -1,26 +1,47 @@
 "use client";
 
-import { toast } from "sonner";
+import { useState } from "react";
+import { Job } from "@/types/job";
+import { ApplicationDialog, SuccessDialog } from "@/features/application";
 
 interface ApplyButtonProps {
+  job: Job;
   className?: string;
 }
 
-export function ApplyButton({ className }: ApplyButtonProps) {
+export function ApplyButton({ job, className }: ApplyButtonProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+
   return (
-    <button
-      type="button"
-      onClick={() =>
-        toast("Applications open soon!", {
-          description: "We'll notify you when this feature launches.",
-        })
-      }
-      className={
-        className ??
-        "inline-flex items-center justify-center rounded-lg bg-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-purple-700 hover:shadow-lg hover:shadow-purple-100 active:scale-[0.98] btn-hover-effect"
-      }
-    >
-      Apply Now
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => setIsDialogOpen(true)}
+        className={
+          className ??
+          "inline-flex items-center justify-center rounded-lg bg-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-purple-700 hover:shadow-lg hover:shadow-purple-100 active:scale-[0.98] btn-hover-effect w-full sm:w-auto"
+        }
+      >
+        Apply Now
+      </button>
+
+      <ApplicationDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        job={job}
+        onSubmitSuccess={() => {
+          setIsDialogOpen(false);
+          setIsSuccessOpen(true);
+        }}
+      />
+
+      <SuccessDialog
+        open={isSuccessOpen}
+        onOpenChange={setIsSuccessOpen}
+        title="Application Submitted!"
+        description={`Your application for the ${job.title} position at ${job.company.name} has been successfully submitted.`}
+      />
+    </>
   );
 }

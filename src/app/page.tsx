@@ -24,9 +24,21 @@ export default async function HomePage() {
   const featured = featuredJobs(jobs);
 
   const steps = [
-    { n: "01", title: "Explore Categories", body: "Browse open roles by field of interest and discipline." },
-    { n: "02", title: "Find the Right Opportunity", body: "Read full job descriptions, team details, and company context." },
-    { n: "03", title: "Apply", body: "Click Apply on any role and take the next step in your career." },
+    {
+      n: "01",
+      title: "Explore Categories",
+      body: "Browse open roles by field of interest and discipline.",
+    },
+    {
+      n: "02",
+      title: "Find the Right Opportunity",
+      body: "Read full job descriptions, team details, and company context.",
+    },
+    {
+      n: "03",
+      title: "Apply",
+      body: "Click Apply on any role and take the next step in your career.",
+    },
   ];
 
   return (
@@ -37,14 +49,14 @@ export default async function HomePage() {
         subtitle="Discover opportunities at the world's most innovative companies."
         size="lg"
       >
-        <Link 
-          href="/jobs" 
+        <Link
+          href="/jobs"
           className="inline-flex items-center rounded-lg bg-purple-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-purple-700 hover:shadow-lg hover:shadow-purple-100 active:scale-[0.98] btn-hover-effect"
         >
           Explore Jobs
         </Link>
-        <Link 
-          href="/categories" 
+        <Link
+          href="/categories"
           className="inline-flex items-center rounded-lg border border-purple-100 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:bg-purple-50/50 hover:border-purple-300"
         >
           Browse Categories
@@ -52,7 +64,10 @@ export default async function HomePage() {
       </PageHero>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-        <SectionHeader title="Explore by Category" subtitle="Find opportunities in the areas that fit your skills and ambitions." />
+        <SectionHeader
+          title="Explore by Category"
+          subtitle="Find opportunities in the areas that fit your skills and ambitions."
+        />
         {cats.length === 0 ? (
           <div className="mt-10 text-center text-slate-500 py-10">No categories found.</div>
         ) : (
@@ -67,8 +82,14 @@ export default async function HomePage() {
       <section className="border-t border-purple-50 bg-purple-50/10">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="flex items-end justify-between gap-6">
-            <SectionHeader title="Featured Opportunities" subtitle="Hand-picked roles from teams shipping ambitious work." />
-            <Link href="/jobs" className="hidden shrink-0 text-sm font-bold text-purple-600 hover:text-purple-700 transition-colors sm:inline">
+            <SectionHeader
+              title="Featured Opportunities"
+              subtitle="Hand-picked roles from teams shipping ambitious work."
+            />
+            <Link
+              href="/jobs"
+              className="hidden shrink-0 text-sm font-bold text-purple-600 hover:text-purple-700 transition-colors sm:inline"
+            >
               View all jobs →
             </Link>
           </div>
@@ -85,7 +106,11 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-        <SectionHeader title="How It Works" subtitle="Three simple steps to your next role." align="center" />
+        <SectionHeader
+          title="How It Works"
+          subtitle="Three simple steps to your next role."
+          align="center"
+        />
         <div className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-3">
           {steps.map((s) => (
             <div key={s.n} className="rounded-xl border border-purple-100 bg-white p-6 shadow-sm">
@@ -97,7 +122,12 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <CTASection headline="Ready to find your next role?" subtitle="Browse open roles across every category." buttonLabel="Browse All Jobs" buttonHref="/jobs" />
+      <CTASection
+        headline="Ready to find your next role?"
+        subtitle="Browse open roles across every category."
+        buttonLabel="Browse All Jobs"
+        buttonHref="/jobs"
+      />
     </div>
   );
 }

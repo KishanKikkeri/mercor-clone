@@ -1,35 +1,47 @@
-
-
 import type { Category, Company, Job, GlobalSettings } from "./types";
 
-const API_KEY = (process.env.NEXT_PUBLIC_CS_API_KEY || process.env.VITE_CS_API_KEY || process.env.CONTENTSTACK_API_KEY || "") as string;
-const DELIVERY_TOKEN = (process.env.NEXT_PUBLIC_CS_DELIVERY_TOKEN || process.env.VITE_CS_DELIVERY_TOKEN || process.env.CONTENTSTACK_DELIVERY_TOKEN || "") as string;
-const ENVIRONMENT = (process.env.NEXT_PUBLIC_CS_ENV || process.env.VITE_CS_ENV || process.env.CONTENTSTACK_ENVIRONMENT || "") as string;
-const API_HOST = (
-  process.env.NEXT_PUBLIC_CONTENTSTACK_CDN ||
+const API_KEY = (process.env.NEXT_PUBLIC_CS_API_KEY ||
+  process.env.VITE_CS_API_KEY ||
+  process.env.CONTENTSTACK_API_KEY ||
+  "") as string;
+const DELIVERY_TOKEN = (process.env.NEXT_PUBLIC_CS_DELIVERY_TOKEN ||
+  process.env.VITE_CS_DELIVERY_TOKEN ||
+  process.env.CONTENTSTACK_DELIVERY_TOKEN ||
+  "") as string;
+const ENVIRONMENT = (process.env.NEXT_PUBLIC_CS_ENV ||
+  process.env.VITE_CS_ENV ||
+  process.env.CONTENTSTACK_ENVIRONMENT ||
+  "") as string;
+const API_HOST = (process.env.NEXT_PUBLIC_CONTENTSTACK_CDN ||
   process.env.CONTENTSTACK_CDN ||
   process.env.NEXT_PUBLIC_CONTENTSTACK_API_HOST ||
   process.env.CONTENTSTACK_API_HOST ||
   process.env.VITE_CS_API_HOST ||
-  "cdn.contentstack.io"
-) as string;
+  "cdn.contentstack.io") as string;
 
 const cleanHost = API_HOST.replace(/^(https?:\/\/)?/, "https://").replace(/\/+$/, "");
 const BASE_URL = cleanHost.endsWith("/v3") ? cleanHost : `${cleanHost}/v3`;
 
 // ─── Raw shapes ───────────────────────────────────────────────────────────────
 
-interface CSLink { href: string; title: string }
+interface CSLink {
+  href: string;
+  title: string;
+}
 
 interface CSCategoryEntry {
-  uid: string; url: string; title: string;
+  uid: string;
+  url: string;
+  title: string;
   short_description: string;
   category_icon?: any;
   featured_category: boolean;
 }
 
 interface CSCompanyEntry {
-  uid: string; url: string; title: string;
+  uid: string;
+  url: string;
+  title: string;
   company_logo?: any;
   company_description: string;
   industry: string;
@@ -38,7 +50,9 @@ interface CSCompanyEntry {
 }
 
 interface CSJobEntry {
-  uid: string; url: string; title: string;
+  uid: string;
+  url: string;
+  title: string;
   short_description: string;
   company: { uid: string }[];
   category: { uid: string }[];
@@ -68,10 +82,7 @@ interface CSGlobalSettingsEntry {
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
 
-async function csGet<T>(
-  contentType: string,
-  params: Record<string, string> = {}
-): Promise<T[]> {
+async function csGet<T>(contentType: string, params: Record<string, string> = {}): Promise<T[]> {
   if (!API_KEY || !DELIVERY_TOKEN) {
     console.warn(`Contentstack credentials missing for content type: ${contentType}`);
     return [];
@@ -93,11 +104,7 @@ async function csGet<T>(
     });
 
     if (!res.ok) {
-      console.error(
-        `Contentstack error [${contentType}]:`,
-        res.status,
-        await res.text()
-      );
+      console.error(`Contentstack error [${contentType}]:`, res.status, await res.text());
       return [];
     }
 
@@ -184,7 +191,7 @@ function splitLines(raw: any): string[] {
 function transformJob(
   e: CSJobEntry,
   categoryMap: Map<string, Category>,
-  companyMap: Map<string, Company>
+  companyMap: Map<string, Company>,
 ): Job | null {
   const categoryUid = e.category?.[0]?.uid;
   const companyUid = e.company?.[0]?.uid;
@@ -211,7 +218,10 @@ function transformJob(
     experienceLevel: (e.experience_level as Job["experienceLevel"]) ?? "Mid Level",
     salaryText: e.salary_text ?? "",
     skills: e.skills
-      ? e.skills.split(",").map((s) => s.trim()).filter(Boolean)
+      ? e.skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
       : [],
     aboutTheRole: e.about_the_role ?? "",
     responsibilities: splitLines(e.responsibilities),
@@ -288,28 +298,17 @@ export function jobBySlug(jobs: Job[], slug: string): Job | undefined {
   return jobs.find((j) => j.slug === slug);
 }
 
-export function categoryBySlug(
-  categories: Category[],
-  slug: string
-): Category | undefined {
+export function categoryBySlug(categories: Category[], slug: string): Category | undefined {
   return categories.find((c) => c.slug === slug);
 }
 
-export function similarJobs(
-  jobs: Job[],
-  jobId: string,
-  categorySlug: string,
-  limit = 3
-): Job[] {
+export function similarJobs(jobs: Job[], jobId: string, categorySlug: string, limit = 3): Job[] {
   return openJobs(jobs)
     .filter((j) => j.category.slug === categorySlug && j.id !== jobId)
     .slice(0, limit);
 }
 
-export function jobsWithCounts(
-  jobs: Job[],
-  categories: Category[]
-): Category[] {
+export function jobsWithCounts(jobs: Job[], categories: Category[]): Category[] {
   return categories.map((cat) => ({
     ...cat,
     jobCount: openJobs(jobs).filter((j) => j.category.slug === cat.slug).length,

@@ -5,7 +5,8 @@ import { CTASection } from "@/components/CTASection";
 
 export const metadata: Metadata = {
   title: "About — TalentBloom",
-  description: "TalentBloom is a modern job platform connecting people with meaningful work across the world's most innovative companies.",
+  description:
+    "TalentBloom is a modern job platform connecting people with meaningful work across the world's most innovative companies.",
 };
 
 const values = [
@@ -54,23 +55,25 @@ export default function AboutPage() {
         <SectionHeader title="Our mission" />
         <div className="mt-6 space-y-4 text-base leading-relaxed text-slate-600">
           <p>
-            Careers are shaped by the opportunities you can actually see. Too many
-            talented people never hear about the roles that would change their lives —
-            not because they aren't qualified, but because the market is fragmented,
-            noisy, and hard to navigate.
+            Careers are shaped by the opportunities you can actually see. Too many talented people
+            never hear about the roles that would change their lives — not because they aren't
+            qualified, but because the market is fragmented, noisy, and hard to navigate.
           </p>
           <p>
             TalentBloom exists to fix that. We curate roles from the teams doing the most
-            interesting work in tech, present them with the context you need to decide,
-            and get out of your way. No spam, no dark patterns, no games — just a
-            clean path from curiosity to conversation.
+            interesting work in tech, present them with the context you need to decide, and get out
+            of your way. No spam, no dark patterns, no games — just a clean path from curiosity to
+            conversation.
           </p>
         </div>
       </section>
 
       <section className="border-t border-purple-50 bg-purple-50/10">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <SectionHeader title="What we believe" subtitle="The principles behind everything we build." />
+          <SectionHeader
+            title="What we believe"
+            subtitle="The principles behind everything we build."
+          />
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {values.map((v) => (
               <div

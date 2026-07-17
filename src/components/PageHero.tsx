@@ -35,7 +35,9 @@ export function PageHero({ title, subtitle, eyebrow, children, size = "sm" }: Pa
             {subtitle.replace(/Mercor/gi, "TalentBloom")}
           </p>
         )}
-        {children && <div className="mt-8 flex flex-wrap items-center justify-center gap-3">{children}</div>}
+        {children && (
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">{children}</div>
+        )}
       </div>
     </section>
   );

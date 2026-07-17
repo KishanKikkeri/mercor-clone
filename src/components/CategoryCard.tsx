@@ -14,11 +14,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
       <div className="flex items-center justify-between">
         <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-purple-50 bg-purple-50/50 text-purple-600 transition-colors group-hover:bg-purple-50 group-hover:text-purple-700">
           {category.icon?.startsWith("http") ? (
-            <img
-              src={category.icon}
-              alt={category.name}
-              className="h-7 w-7 object-contain"
-            />
+            <img src={category.icon} alt={category.name} className="h-7 w-7 object-contain" />
           ) : (
             <span className="text-2xl">{category.icon}</span>
           )}
@@ -30,7 +26,9 @@ export function CategoryCard({ category }: CategoryCardProps) {
       <h3 className="mt-5 text-lg font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
         {category.name}
       </h3>
-      <p className="mt-2 text-sm text-slate-500 leading-relaxed flex-1">{category.shortDescription}</p>
+      <p className="mt-2 text-sm text-slate-500 leading-relaxed flex-1">
+        {category.shortDescription}
+      </p>
     </Link>
   );
 }

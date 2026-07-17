@@ -16,18 +16,12 @@ export const metadata: Metadata = {
   keywords: ["jobs", "careers", "hiring", "remote work", "tech jobs", "talentbloom"],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable}`}>
       <body className="flex min-h-screen flex-col bg-white font-sans antialiased text-slate-800 selection:bg-purple-100 selection:text-purple-900">
         <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
+        <main className="flex-1">{children}</main>
         <Footer />
         <Toaster />
       </body>

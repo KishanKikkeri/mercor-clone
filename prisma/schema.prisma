@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider  = "prisma-client-js"
+  output    = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+/**
+ * ApplicationStatus Enum
+ * Defines the current state of a candidate's application in the recruitment funnel.
+ */
+enum ApplicationStatus {
+  APPLIED
+  REVIEWING
+  SHORTLISTED
+  INTERVIEW
+  OFFERED
+  HIRED
+  REJECTED
+}
+
+/**
+ * Application Model
+ * Represents a job application submitted by a candidate.
+ * It includes candidate profile data and snapshot information of the job.
+ */
+model Application {
+  id            String            @id @default(uuid())
+  jobId         String
+  
+  // Snapshot Fields (protects against future changes in CMS or jobs data)
+  jobTitle      String
+  companyName   String
+  
+  // Candidate Contact Info
+  candidateName String
+  email         String
+  phone         String
+  
+  // Professional Links & Content
+  linkedinUrl   String?
+  portfolioUrl  String?
+  coverLetter   String?
+  resumeUrl     String?
+  
+  // Process State
+  status        ApplicationStatus @default(APPLIED)
+  
+  // Timestamps
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  // Performance Indexes for frequent search/filter operations
+  @@index([jobId])
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}

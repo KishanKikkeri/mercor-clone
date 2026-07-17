@@ -20,14 +20,16 @@ export default async function CategoriesPage() {
 
   return (
     <div>
-      <PageHero 
-        eyebrow="Categories" 
-        title="Find opportunities based on your skills and interests." 
-        subtitle="Explore every discipline hiring on TalentBloom right now." 
+      <PageHero
+        eyebrow="Categories"
+        title="Find opportunities based on your skills and interests."
+        subtitle="Explore every discipline hiring on TalentBloom right now."
       />
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         {categories.length === 0 ? (
-          <div className="text-center text-slate-500 py-12">No categories found. Check back later!</div>
+          <div className="text-center text-slate-500 py-12">
+            No categories found. Check back later!
+          </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((c) => (

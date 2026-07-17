@@ -46,7 +46,10 @@ export default async function JobDetailPage({ params }: PageProps) {
       <div className="mx-auto max-w-3xl px-4 py-24 text-center">
         <h1 className="text-3xl font-bold text-slate-900">Role not found</h1>
         <p className="mt-2 text-slate-500">This role may have been closed or moved.</p>
-        <Link href="/jobs" className="mt-6 inline-block font-semibold text-purple-600 hover:text-purple-700 transition-colors">
+        <Link
+          href="/jobs"
+          className="mt-6 inline-block font-semibold text-purple-600 hover:text-purple-700 transition-colors"
+        >
           ← Back to Jobs
         </Link>
       </div>
@@ -61,10 +64,10 @@ export default async function JobDetailPage({ params }: PageProps) {
         <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="flex items-start gap-4">
-              <img 
-                src={job.company.logo} 
-                alt={job.company.name} 
-                className="h-16 w-16 rounded-xl border border-purple-50 bg-white object-cover shadow-sm" 
+              <img
+                src={job.company.logo}
+                alt={job.company.name}
+                className="h-16 w-16 rounded-xl border border-purple-50 bg-white object-cover shadow-sm"
               />
               <div>
                 <div className="text-sm font-semibold text-purple-600">{job.company.name}</div>
@@ -98,7 +101,7 @@ export default async function JobDetailPage({ params }: PageProps) {
               </div>
             </div>
             <div className="shrink-0">
-              <ApplyButton />
+              <ApplyButton job={job} />
             </div>
           </div>
         </div>
@@ -110,7 +113,7 @@ export default async function JobDetailPage({ params }: PageProps) {
             <Section title="About the role">
               <p>{job.aboutTheRole}</p>
             </Section>
-            
+
             {job.responsibilities && job.responsibilities.length > 0 && (
               <Section title="Responsibilities">
                 <ul className="list-disc space-y-2 pl-5">
@@ -120,7 +123,7 @@ export default async function JobDetailPage({ params }: PageProps) {
                 </ul>
               </Section>
             )}
-            
+
             {job.requirements && job.requirements.length > 0 && (
               <Section title="Requirements">
                 <ul className="list-disc space-y-2 pl-5">
@@ -130,7 +133,7 @@ export default async function JobDetailPage({ params }: PageProps) {
                 </ul>
               </Section>
             )}
-            
+
             {job.preferredQualifications && job.preferredQualifications.length > 0 && (
               <Section title="Preferred qualifications">
                 <ul className="list-disc space-y-2 pl-5">
@@ -140,18 +143,18 @@ export default async function JobDetailPage({ params }: PageProps) {
                 </ul>
               </Section>
             )}
-            
+
             {job.skills && job.skills.length > 0 && (
               <Section title="Skills">
                 <SkillsList skills={job.skills} />
               </Section>
             )}
-            
+
             <div className="pt-4">
-              <ApplyButton />
+              <ApplyButton job={job} />
             </div>
           </div>
-          
+
           <aside className="space-y-6">
             <CompanyInfo company={job.company} />
           </aside>

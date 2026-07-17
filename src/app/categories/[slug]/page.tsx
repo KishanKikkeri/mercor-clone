@@ -3,7 +3,13 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { JobCard } from "@/components/JobCard";
 import { EmptyState } from "@/components/EmptyState";
-import { fetchCategories, fetchJobs, categoryBySlug, jobsByCategorySlug, jobsWithCounts } from "@/lib/contentstack";
+import {
+  fetchCategories,
+  fetchJobs,
+  categoryBySlug,
+  jobsByCategorySlug,
+  jobsWithCounts,
+} from "@/lib/contentstack";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -23,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CategoryDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  
+
   const [cats, allJobs] = await Promise.all([
     fetchCategories().catch(() => []),
     fetchJobs().catch(() => []),
@@ -36,7 +42,10 @@ export default async function CategoryDetailPage({ params }: PageProps) {
       <div className="mx-auto max-w-3xl px-4 py-24 text-center">
         <h1 className="text-3xl font-bold text-slate-900">Category not found</h1>
         <p className="mt-2 text-slate-500">The category you're looking for doesn't exist.</p>
-        <Link href="/categories" className="mt-6 inline-block font-semibold text-purple-600 hover:text-purple-700 transition-colors">
+        <Link
+          href="/categories"
+          className="mt-6 inline-block font-semibold text-purple-600 hover:text-purple-700 transition-colors"
+        >
           ← Back to Categories
         </Link>
       </div>
@@ -52,7 +61,10 @@ export default async function CategoryDetailPage({ params }: PageProps) {
       <section className="border-b border-purple-100 bg-slate-50/40">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-1.5 text-sm text-slate-500">
-            <Link href="/categories" className="hover:text-purple-600 transition-colors font-medium">
+            <Link
+              href="/categories"
+              className="hover:text-purple-600 transition-colors font-medium"
+            >
               Categories
             </Link>
             <ChevronRight className="h-4 w-4 text-slate-400" />
@@ -61,7 +73,11 @@ export default async function CategoryDetailPage({ params }: PageProps) {
           <div className="mt-6 flex items-start gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-purple-50 bg-white text-purple-600 shadow-sm">
               {updatedCategory.icon?.startsWith("http") ? (
-                <img src={updatedCategory.icon} alt={updatedCategory.name} className="h-8 w-8 object-contain" />
+                <img
+                  src={updatedCategory.icon}
+                  alt={updatedCategory.name}
+                  className="h-8 w-8 object-contain"
+                />
               ) : (
                 <span className="text-3xl">{updatedCategory.icon}</span>
               )}
@@ -80,9 +96,9 @@ export default async function CategoryDetailPage({ params }: PageProps) {
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {jobs.length === 0 ? (
-          <EmptyState 
-            title="No open roles yet" 
-            description={`There aren't any open roles in ${updatedCategory.name} right now. Check back soon.`} 
+          <EmptyState
+            title="No open roles yet"
+            description={`There aren't any open roles in ${updatedCategory.name} right now. Check back soon.`}
           />
         ) : (
           <>
