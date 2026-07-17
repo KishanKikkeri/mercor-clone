@@ -1,6 +1,7 @@
 import { getPersonalizeSdk } from "../personalize";
 import { PersonalizeEventKey } from "./constants";
 import { EventPayloads } from "./events";
+import { recordBehaviorInteraction } from "@/lib/behavior/engine";
 
 /**
  * Triggers an event on Contentstack Personalize.
@@ -13,6 +14,15 @@ export async function trackEvent<K extends PersonalizeEventKey>(
 ): Promise<void> {
   if (typeof window === "undefined") {
     return;
+  }
+
+  // Record interaction in our local behavioral scoring engine
+  try {
+    recordBehaviorInteraction(eventKey, payload);
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("[Behavior Engine] Failed to record interaction:", error);
+    }
   }
 
   try {
