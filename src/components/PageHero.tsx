@@ -6,11 +6,18 @@ interface PageHeroProps {
   eyebrow?: string;
   children?: ReactNode;
   size?: "sm" | "lg";
+  backgroundImage?: string;
 }
 
-export function PageHero({ title, subtitle, eyebrow, children, size = "sm" }: PageHeroProps) {
+export function PageHero({ title, subtitle, eyebrow, children, size = "sm", backgroundImage }: PageHeroProps) {
   return (
-    <section className="relative overflow-hidden border-b border-purple-100 bg-gradient-to-b from-purple-50/60 via-purple-50/20 to-white">
+    <section 
+      style={backgroundImage ? { backgroundImage: `url(${backgroundImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
+      className="relative overflow-hidden border-b border-purple-100 bg-gradient-to-b from-purple-50/60 via-purple-50/20 to-white"
+    >
+      {backgroundImage && (
+        <div className="absolute inset-0 bg-white/85 pointer-events-none" />
+      )}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.1),transparent_60%)]"
