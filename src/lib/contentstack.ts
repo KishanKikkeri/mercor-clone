@@ -294,8 +294,13 @@ interface CSFeaturedJobsEntry {
   jobs?: CSJobEntry[];
 }
 
-export async function getHero(): Promise<HeroCMS | null> {
-  const entries = await csGet<CSHeroEntry>("hero");
+export async function getHero(variantAliases?: string[]): Promise<HeroCMS | null> {
+  const params: Record<string, string> = {};
+  if (variantAliases && variantAliases.length > 0) {
+    params["cs_personalize_variant_alias"] = variantAliases.join(",");
+  }
+
+  const entries = await csGet<CSHeroEntry>("hero", params);
   const entry = entries[0];
   if (!entry) return null;
 

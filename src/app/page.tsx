@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
+import { PersonalizedHero } from "@/components/PersonalizedHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { CategoryCard } from "@/components/CategoryCard";
 import { JobCard } from "@/components/JobCard";
@@ -72,20 +73,15 @@ export default async function HomePage() {
   return (
     <div>
       <TrackHomepage />
-      <PageHero
-        eyebrow="Now hiring"
-        title={heroTitle}
-        subtitle={heroSubtitle}
-        size="lg"
-        backgroundImage={heroBgImage}
-      >
-        <Link
-          href={heroCtaLink}
-          className="inline-flex items-center rounded-lg bg-purple-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-purple-700 hover:shadow-lg hover:shadow-purple-100 active:scale-[0.98] btn-hover-effect"
-        >
-          {heroCtaText}
-        </Link>
-      </PageHero>
+      <PersonalizedHero
+        fallback={{
+          heading: heroTitle,
+          subheading: heroSubtitle,
+          cta_button_text: heroCtaText,
+          cta_button_link: heroCtaLink,
+          background_image: heroBgImage,
+        }}
+      />
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <SectionHeader
