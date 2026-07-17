@@ -4,6 +4,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { CategoryCard } from "@/components/CategoryCard";
 import { JobCard } from "@/components/JobCard";
 import { CTASection } from "@/components/CTASection";
+import { TrackHomepage } from "@/components/TrackHomepage";
 import {
   fetchCategories,
   fetchJobs,
@@ -43,6 +44,7 @@ export default async function HomePage() {
 
   return (
     <div>
+      <TrackHomepage />
       <PageHero
         eyebrow="Now hiring"
         title="Find work that moves you forward."
