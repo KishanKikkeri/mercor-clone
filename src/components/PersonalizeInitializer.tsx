@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Sdk } from '@contentstack/personalize-edge-sdk/dist/sdk';
 import { getPersonalizeSdk } from '@/lib/personalize';
+import { getBehaviorState, subscribeToBehavior } from '@/lib/behavior/engine';
 
 interface PersonalizeContextType {
   sdk: Sdk | null;
@@ -46,6 +47,49 @@ export function PersonalizeProvider({ children }: { children: React.ReactNode })
       active = false;
     };
   }, []);
+
+  // Synchronize resolved local persona to Contentstack Personalize Edge custom attributes
+  useEffect(() => {
+    if (!sdk) return;
+
+    let lastSyncedPersona: string | null | undefined = undefined;
+
+    const syncPersona = (persona: string | null) => {
+      if (persona !== lastSyncedPersona) {
+        lastSyncedPersona = persona;
+
+        sdk
+          .set({ persona })
+          .then(() => {
+            if (process.env.NODE_ENV === "development") {
+              console.log(
+                `%c[Personalize Sync]`,
+                "color: #2563eb; font-weight: bold;",
+                `Synced persona attribute: "${persona}"`
+              );
+            }
+          })
+          .catch((error) => {
+            if (process.env.NODE_ENV === "development") {
+              console.error("[Personalize Sync] Failed to synchronize persona:", error);
+            }
+          });
+      }
+    };
+
+    // Synchronize initial persona on mount
+    const initialState = getBehaviorState();
+    syncPersona(initialState.currentPersona ?? null);
+
+    // Subscribe to score updates to sync future updates
+    const unsubscribe = subscribeToBehavior((state) => {
+      syncPersona(state.currentPersona ?? null);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [sdk]);
 
   return (
     <PersonalizeContext.Provider value={{ sdk, loading }}>
