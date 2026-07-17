@@ -136,7 +136,7 @@ export function matchCategory(text: string): string | null {
   return bestCategory;
 }
 
-export const MIN_PERSONA_THRESHOLD = 15;
+export const MIN_PERSONA_THRESHOLD = 40;
 
 export const PERSONA_PRIORITY = {
   [SUPPORTED_CATEGORIES.AI_ENGINEER]: 4,
