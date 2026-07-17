@@ -83,12 +83,6 @@ export default async function HomePage() {
         >
           {heroCtaText}
         </Link>
-        <Link
-          href="/categories"
-          className="inline-flex items-center rounded-lg border border-purple-100 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:bg-purple-50/50 hover:border-purple-300"
-        >
-          Browse Categories
-        </Link>
       </PageHero>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
