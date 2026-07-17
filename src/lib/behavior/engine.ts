@@ -42,14 +42,15 @@ export function recordBehaviorInteraction(
       console.log(
         `%c[Behavior Engine]`,
         "color: #10b981; font-weight: bold;",
-        `\nInteraction:\n${type}\n\nPayload:\n`,
+        `\nInteraction: ${type}\nPayload:`,
         payload || {},
         `\n\nUpdated Scores:\n`,
         `AI Engineer:         ${currentState.aiEngineer}\n`,
         `Frontend Developer:  ${currentState.frontendDeveloper}\n`,
         `Backend Developer:   ${currentState.backendDeveloper}\n`,
         `Full Stack Developer: ${currentState.fullStackDeveloper}\n`,
-        `Total Interactions:   ${currentState.totalInteractions}`
+        `Total Interactions:   ${currentState.totalInteractions}\n`,
+        `Current Persona:      ${currentState.currentPersona || "None (Below Threshold)"}`
       );
     }
   } catch (error) {

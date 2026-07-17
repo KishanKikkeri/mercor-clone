@@ -1,5 +1,5 @@
 import { BehaviorState, Interaction } from "./types";
-import { DEFAULT_SCORING_WEIGHTS, matchCategory, CATEGORY_TO_STATE_KEY } from "./scoreRules";
+import { DEFAULT_SCORING_WEIGHTS, matchCategory, CATEGORY_TO_STATE_KEY, resolvePersona } from "./scoreRules";
 
 /**
  * Pure state reducer to calculate the next BehaviorState based on an interaction.
@@ -53,6 +53,17 @@ export function updateScore(
       (newState as any)[stateKey] += weight;
     }
   }
+
+  // Resolve dominant persona based on updated scores
+  newState.currentPersona = resolvePersona(
+    {
+      aiEngineer: newState.aiEngineer,
+      frontendDeveloper: newState.frontendDeveloper,
+      backendDeveloper: newState.backendDeveloper,
+      fullStackDeveloper: newState.fullStackDeveloper,
+    },
+    state.currentPersona || null
+  );
 
   return newState;
 }

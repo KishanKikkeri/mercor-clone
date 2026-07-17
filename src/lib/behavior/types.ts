@@ -15,4 +15,5 @@ export interface BehaviorState {
   totalInteractions: number;
   lastInteraction?: InteractionType;
   lastUpdated?: string;
+  currentPersona?: string | null;
 }

@@ -24,3 +24,10 @@ export function getDominantCategory(): string | null {
 
   return dominantCategory;
 }
+
+/**
+ * Exposes a helper to fetch the current resolved persona directly.
+ */
+export function getCurrentPersona(): string | null {
+  return getBehaviorState().currentPersona ?? null;
+}

@@ -55,5 +55,6 @@ export function useBehavior() {
   return {
     state,
     dominantInterest: getDominantInterest(),
+    currentPersona: state.currentPersona ?? null,
   };
 }

@@ -8,6 +8,7 @@ export const initialBehaviorState: BehaviorState = {
   backendDeveloper: 0,
   fullStackDeveloper: 0,
   totalInteractions: 0,
+  currentPersona: null,
 };
 
 /**
@@ -61,6 +62,7 @@ function isValidState(obj: any): obj is BehaviorState {
     typeof obj.frontendDeveloper === "number" &&
     typeof obj.backendDeveloper === "number" &&
     typeof obj.fullStackDeveloper === "number" &&
-    typeof obj.totalInteractions === "number"
+    typeof obj.totalInteractions === "number" &&
+    (obj.currentPersona === undefined || obj.currentPersona === null || typeof obj.currentPersona === "string")
   );
 }
