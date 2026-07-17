@@ -20,6 +20,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+import { applicationClient } from "../api/application.client";
+import { toast } from "sonner";
+
 interface ApplicationFormProps {
   job: Job;
   onSubmitSuccess?: () => void;
@@ -40,10 +43,47 @@ export function ApplicationForm({ job, onSubmitSuccess }: ApplicationFormProps) 
 
   const { isSubmitting } = form.formState;
 
-  const onSubmit = (data: Application) => {
-    console.log("Application Data:", data);
-    if (onSubmitSuccess) {
-      onSubmitSuccess();
+  const onSubmit = async (data: Application) => {
+    try {
+      // TODO: Replace with production logging
+      console.log("[Application Form] Initiating submit flow for candidate:", data.email);
+
+      // Call the frontend API client. Passing placeholder resume base64 & filename to satisfy route validations.
+      const response = await applicationClient.submitApplication({
+        jobId: job.id,
+        name: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        resumeBase64: "dummy_resume_base64_placeholder",
+        resumeFileName: "resume.pdf",
+        coverLetter: data.coverLetter || null,
+        jobTitle: job.title,
+        companyName: job.company?.name || null,
+        linkedinUrl: data.linkedinUrl || null,
+        portfolioUrl: data.portfolioUrl || null,
+      });
+
+      if (!response.success) {
+        // TODO: Replace with production logging
+        console.error("[Application Form Submit Error]:", response.message);
+        toast.error(response.message || "Submission failed. Please check your details and try again.");
+        return;
+      }
+
+      // TODO: Replace with production logging
+      console.log("[Application Form Submit Success] Persisted ID:", response.data.id);
+      toast.success("Your job application has been submitted successfully!");
+      
+      // Reset form controls
+      form.reset();
+
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      }
+    } catch (err: any) {
+      // TODO: Replace with production logging
+      console.error("[Application Form Submit Exception]:", err);
+      toast.error("A network or system error occurred. Please try again later.");
     }
   };
 
