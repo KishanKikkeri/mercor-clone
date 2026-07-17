@@ -82,7 +82,11 @@ interface CSGlobalSettingsEntry {
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
 
-async function csGet<T>(contentType: string, params: Record<string, string> = {}): Promise<T[]> {
+async function csGet<T>(
+  contentType: string,
+  params: Record<string, string> = {},
+  headers: Record<string, string> = {}
+): Promise<T[]> {
   if (!API_KEY || !DELIVERY_TOKEN) {
     console.warn(`Contentstack credentials missing for content type: ${contentType}`);
     return [];
@@ -100,6 +104,7 @@ async function csGet<T>(contentType: string, params: Record<string, string> = {}
       headers: {
         api_key: API_KEY,
         access_token: DELIVERY_TOKEN,
+        ...headers,
       },
     });
 
@@ -295,12 +300,12 @@ interface CSFeaturedJobsEntry {
 }
 
 export async function getHero(variantAliases?: string[]): Promise<HeroCMS | null> {
-  const params: Record<string, string> = {};
+  const headers: Record<string, string> = {};
   if (variantAliases && variantAliases.length > 0) {
-    params["cs_personalize_variant_alias"] = variantAliases.join(",");
+    headers["x-cs-personalize-variant-alias"] = variantAliases.join(",");
   }
 
-  const entries = await csGet<CSHeroEntry>("hero", params);
+  const entries = await csGet<CSHeroEntry>("hero", {}, headers);
   const entry = entries[0];
   if (!entry) return null;
 
