@@ -23,17 +23,39 @@ export function PersonalizedHero({ fallback }: PersonalizedHeroProps) {
 
     if (process.env.NODE_ENV === "development") {
       console.log(
-        `%c[Personalize Debug]`,
+        `%c[Personalize Debug - Summary]`,
         "color: #ec4899; font-weight: bold;",
-        `\nResolved Variant Aliases:\n`,
-        aliases,
-        `\nActive Experiences:\n`,
-        experiences.map((exp) => ({
-          experienceShortUid: exp.shortUid,
-          activeVariantShortUid: exp.activeVariantShortUid,
-          name: (exp as any).name || "N/A",
-        }))
+        `\nResolved Variant Aliases:`, aliases,
+        `\nTotal Experiences Found:`, experiences.length
       );
+
+      experiences.forEach((exp, index) => {
+        console.group(`[Personalize Experience Debug #${index + 1}: ${exp.shortUid}]`);
+        
+        console.log("Experience Name:", (exp as any).name ?? "N/A");
+        console.log("Experience Short UID:", exp.shortUid);
+        console.log("Experience Status:", (exp as any).status ?? "N/A");
+        console.log("Active Variant Short UID:", exp.activeVariantShortUid ?? "None (No active variant resolved)");
+        console.log("Active Variant Alias:", (exp as any).activeVariantAlias ?? "N/A");
+        console.log("All Variants:", (exp as any).variants ?? "N/A");
+        console.log("Audience Information:", (exp as any).audience ?? "N/A");
+        console.log("Entry Variant Information:", (exp as any).entryVariant ?? "N/A");
+        console.log("Entry Variant Alias:", (exp as any).entryVariantAlias ?? "N/A");
+        console.log("Matching Status:", (exp as any).matchingStatus ?? (exp as any).isMatched ?? "N/A");
+        console.log("Eligibility Status:", (exp as any).eligibilityStatus ?? (exp as any).isEligible ?? "N/A");
+        
+        console.log("Resolution / Evaluation Flags:", {
+          isActive: (exp as any).isActive,
+          isVariantResolved: !!exp.activeVariantShortUid,
+          hasFallback: (exp as any).hasFallback,
+          audienceMatched: (exp as any).audienceMatched,
+        });
+
+        console.log("Raw Experience Object:");
+        console.dir(exp);
+        
+        console.groupEnd();
+      });
     }
 
     if (aliases && aliases.length > 0) {
