@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Sdk } from '@contentstack/personalize-edge-sdk/dist/sdk';
-import { getPersonalizeSdk } from '@/lib/personalize';
+import { getPersonalizeSdk, refreshPersonalizeSdk } from '@/lib/personalize';
 import { getBehaviorState, subscribeToBehavior } from '@/lib/behavior/engine';
 
 interface PersonalizeContextType {
@@ -60,13 +60,19 @@ export function PersonalizeProvider({ children }: { children: React.ReactNode })
 
         sdk
           .set({ visitor_persona: persona })
-          .then(() => {
+          .then(async () => {
             if (process.env.NODE_ENV === "development") {
               console.log(
                 `%c[Personalize Sync]`,
                 "color: #2563eb; font-weight: bold;",
-                `Synced persona attribute: "${persona}"`
+                `Synced persona attribute: "${persona}". Re-evaluating manifest...`
               );
+            }
+
+            // Force refresh of the Personalize SDK manifest to pull newly computed experiences
+            const refreshedSdk = await refreshPersonalizeSdk();
+            if (refreshedSdk) {
+              setSdk(refreshedSdk);
             }
           })
           .catch((error) => {

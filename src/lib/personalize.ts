@@ -60,3 +60,29 @@ export async function getPersonalizeSdk(): Promise<Sdk | null> {
     isInitializing = false;
   }
 }
+
+/**
+ * Force-refreshes the personalization SDK manifest.
+ * Resets the local singleton cache, clears the client manifest cookie,
+ * and fetches the latest computed manifest from Contentstack Personalize Edge.
+ */
+export async function refreshPersonalizeSdk(): Promise<Sdk | null> {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  // Clear cached instance
+  personalizeInstance = null;
+
+  // Clear the manifest cookie to force Personalize.init to execute fetchManifest
+  try {
+    document.cookie = "cs-personalize-manifest=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+  } catch (cookieErr) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[Personalize SDK] Failed to clear manifest cookie:', cookieErr);
+    }
+  }
+
+  // Re-fetch manifest from edge
+  return getPersonalizeSdk();
+}
