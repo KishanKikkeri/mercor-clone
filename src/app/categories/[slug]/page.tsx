@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { JobCard } from "@/components/JobCard";
 import { EmptyState } from "@/components/EmptyState";
+import { TrackCategoryView } from "@/components/TrackCategoryView";
 import {
   fetchCategories,
   fetchJobs,
@@ -58,6 +59,7 @@ export default async function CategoryDetailPage({ params }: PageProps) {
 
   return (
     <div>
+      <TrackCategoryView category={updatedCategory} />
       <section className="border-b border-purple-100 bg-slate-50/40">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-1.5 text-sm text-slate-500">

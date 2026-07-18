@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { JobCard } from "@/components/JobCard";
 import { EmptyState } from "@/components/EmptyState";
 import { JobFilters, defaultJobFilters, type JobFiltersState } from "@/components/JobFilters";
 import type { Job, Category } from "@/lib/types";
+import { trackCategorySelect, trackJobSearch } from "@/utils/personalizeHelpers";
 
 interface JobsClientProps {
   initialJobs: Job[];
@@ -13,6 +14,38 @@ interface JobsClientProps {
 
 export function JobsClient({ initialJobs, categories }: JobsClientProps) {
   const [filters, setFilters] = useState<JobFiltersState>(defaultJobFilters);
+
+  // Track Category Selection (only when changed and not default "all")
+  const prevCategoryRef = useRef(filters.category);
+  useEffect(() => {
+    if (filters.category !== prevCategoryRef.current) {
+      prevCategoryRef.current = filters.category;
+      if (filters.category !== "all") {
+        const selectedCat = categories.find((c) => c.slug === filters.category);
+        if (selectedCat) {
+          trackCategorySelect(selectedCat.name);
+        }
+      }
+    }
+  }, [filters.category, categories]);
+
+  // Track Job Search (debounced 600ms to determine completed search)
+  const [debouncedQuery, setDebouncedQuery] = useState(filters.query);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(filters.query);
+    }, 600);
+    return () => clearTimeout(handler);
+  }, [filters.query]);
+
+  const lastTrackedQueryRef = useRef("");
+  useEffect(() => {
+    const trimmed = debouncedQuery.trim();
+    if (trimmed && trimmed !== lastTrackedQueryRef.current) {
+      lastTrackedQueryRef.current = trimmed;
+      trackJobSearch(trimmed);
+    }
+  }, [debouncedQuery]);
 
   const results = useMemo(() => {
     return initialJobs.filter((j) => {

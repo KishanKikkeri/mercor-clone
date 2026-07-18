@@ -6,6 +6,7 @@ import { SkillsList } from "@/components/SkillsList";
 import { CompanyInfo } from "@/components/CompanyInfo";
 import { JobCard } from "@/components/JobCard";
 import { SectionHeader } from "@/components/SectionHeader";
+import { TrackJobView } from "@/components/TrackJobView";
 import { fetchJobs, jobBySlug, similarJobs } from "@/lib/contentstack";
 
 interface PageProps {
@@ -14,7 +15,7 @@ interface PageProps {
 
 export const revalidate = 60; // Cache page for up to 60 seconds
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export const generateMetadata = async ({ params }: PageProps): Promise<Metadata> => {
   const { slug } = await params;
   const jobs = await fetchJobs().catch(() => []);
   const job = jobBySlug(jobs, slug);
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: job ? `${job.title} at ${job.company.name} — TalentBloom` : "Role Not Found",
     description: job ? job.shortDescription : "Job details page on TalentBloom",
   };
-}
+};
 
 const badgeClass =
   "inline-flex items-center gap-1.5 rounded-full border border-purple-100 bg-purple-50/40 px-3 py-1 text-xs font-semibold text-purple-700";
@@ -60,6 +61,7 @@ export default async function JobDetailPage({ params }: PageProps) {
 
   return (
     <div>
+      <TrackJobView job={job} />
       <section className="border-b border-purple-100 bg-slate-50/40">
         <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">

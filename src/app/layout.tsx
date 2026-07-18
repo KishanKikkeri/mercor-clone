@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import { PersonalizeProvider } from "@/components/PersonalizeInitializer";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,10 +21,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable}`}>
       <body className="flex min-h-screen flex-col bg-white font-sans antialiased text-slate-800 selection:bg-purple-100 selection:text-purple-900">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <Toaster />
+        <PersonalizeProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <Toaster />
+        </PersonalizeProvider>
       </body>
     </html>
   );

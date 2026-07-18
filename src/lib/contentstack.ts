@@ -1,4 +1,4 @@
-import type { Category, Company, Job, GlobalSettings } from "./types";
+import type { Category, Company, Job, GlobalSettings, HeroCMS, FeaturedJobsCMS } from "./types";
 
 const API_KEY = (process.env.NEXT_PUBLIC_CS_API_KEY ||
   process.env.VITE_CS_API_KEY ||
@@ -82,7 +82,11 @@ interface CSGlobalSettingsEntry {
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
 
-async function csGet<T>(contentType: string, params: Record<string, string> = {}): Promise<T[]> {
+async function csGet<T>(
+  contentType: string,
+  params: Record<string, string> = {},
+  headers: Record<string, string> = {}
+): Promise<T[]> {
   if (!API_KEY || !DELIVERY_TOKEN) {
     console.warn(`Contentstack credentials missing for content type: ${contentType}`);
     return [];
@@ -100,6 +104,7 @@ async function csGet<T>(contentType: string, params: Record<string, string> = {}
       headers: {
         api_key: API_KEY,
         access_token: DELIVERY_TOKEN,
+        ...headers,
       },
     });
 
@@ -273,6 +278,71 @@ export async function fetchGlobalSettings(): Promise<GlobalSettings | null> {
     footerLinks: entry.footer_links ?? [],
     socialLinks: entry.social_links ?? [],
     copyrightText: entry.copyright_text ?? "",
+  };
+}
+
+interface CSHeroEntry {
+  uid: string;
+  title: string;
+  heading: string;
+  subheading?: string;
+  cta_button_text?: string;
+  cta_button_link?: string;
+  background_image?: any;
+}
+
+interface CSFeaturedJobsEntry {
+  uid: string;
+  title: string;
+  heading: string;
+  description?: string;
+  jobs?: CSJobEntry[];
+}
+
+export async function getHero(variantAliases?: string[]): Promise<HeroCMS | null> {
+  const headers: Record<string, string> = {};
+  if (variantAliases && variantAliases.length > 0) {
+    headers["x-cs-variant-uid"] = variantAliases.join(",");
+  }
+
+  const entries = await csGet<CSHeroEntry>("hero", {}, headers);
+  const entry = entries[0];
+  if (!entry) return null;
+
+  return {
+    heading: entry.heading || entry.title || "",
+    subheading: entry.subheading || "",
+    cta_button_text: entry.cta_button_text || "",
+    cta_button_link: entry.cta_button_link || "",
+    background_image: getImageUrl(entry.background_image),
+  };
+}
+
+export async function getFeaturedJobs(variantAliases?: string[]): Promise<FeaturedJobsCMS | null> {
+  const headers: Record<string, string> = {};
+  if (variantAliases && variantAliases.length > 0) {
+    headers["x-cs-variant-uid"] = variantAliases.join(",");
+  }
+
+  const entries = await csGet<CSFeaturedJobsEntry>("featured_jobs", { "include[]": "jobs" }, headers);
+  const entry = entries[0];
+  if (!entry) return null;
+
+  const [categories, companies] = await Promise.all([
+    fetchCategories().catch(() => []),
+    fetchCompanies().catch(() => []),
+  ]);
+  const categoryMap = new Map(categories.map((c) => [c.id, c]));
+  const companyMap = new Map(companies.map((c) => [c.id, c]));
+
+  const resolvedJobs = (entry.jobs ?? [])
+    .map((rawJob) => transformJob(rawJob, categoryMap, companyMap))
+    .filter((j): j is Job => j !== null);
+
+  return {
+    heading: entry.heading || entry.title || "Featured Opportunities",
+    description: entry.description || "",
+    jobs: resolvedJobs,
   };
 }
 
