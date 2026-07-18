@@ -60,7 +60,7 @@ export function PersonalizeProvider({ children }: { children: React.ReactNode })
         lastSyncedPersona = persona;
 
         sdk
-          .set({ visitor_persona: persona })
+          .set({ visitor_persona: persona ?? "" })
           .then(async () => {
             if (DEBUG.enabled && DEBUG.personalize) {
               console.log(

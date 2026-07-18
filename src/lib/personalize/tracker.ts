@@ -37,7 +37,11 @@ export async function trackEvent<K extends PersonalizeEventKey>(
 
     // Pass custom attributes to SDK context if properties are provided
     if (payload && Object.keys(payload).length > 0) {
-      await sdk.set(payload);
+      const cleanPayload = Object.entries(payload).reduce((acc, [key, val]) => {
+        acc[key] = val === null ? "" : val;
+        return acc;
+      }, {} as any);
+      await sdk.set(cleanPayload);
     }
 
     // Trigger the event
