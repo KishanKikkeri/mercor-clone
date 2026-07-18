@@ -19,6 +19,23 @@ export function PersonalizedHero({ fallback }: PersonalizedHeroProps) {
     if (loading || !sdk) return;
 
     const aliases = sdk.getVariantAliases();
+    const experiences = sdk.getExperiences();
+
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `%c[Personalize Debug]`,
+        "color: #ec4899; font-weight: bold;",
+        `\nResolved Variant Aliases:\n`,
+        aliases,
+        `\nActive Experiences:\n`,
+        experiences.map((exp) => ({
+          experienceShortUid: exp.shortUid,
+          activeVariantShortUid: exp.activeVariantShortUid,
+          name: (exp as any).name || "N/A",
+        }))
+      );
+    }
+
     if (aliases && aliases.length > 0) {
       // Fetch personalized hero content
       fetch(`/api/personalized-hero?aliases=${encodeURIComponent(aliases.join(","))}`)

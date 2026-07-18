@@ -59,7 +59,7 @@ export function PersonalizeProvider({ children }: { children: React.ReactNode })
         lastSyncedPersona = persona;
 
         sdk
-          .set({ persona })
+          .set({ visitor_persona: persona })
           .then(() => {
             if (process.env.NODE_ENV === "development") {
               console.log(
