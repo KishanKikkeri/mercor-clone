@@ -1,5 +1,6 @@
 import Personalize from '@contentstack/personalize-edge-sdk';
 import { Sdk } from '@contentstack/personalize-edge-sdk/dist/sdk';
+import { DEBUG } from './debug';
 
 let personalizeInstance: Sdk | null = null;
 let isInitializing = false;
@@ -47,7 +48,7 @@ export async function getPersonalizeSdk(): Promise<Sdk | null> {
     // Initialize Contentstack Personalize Client
     personalizeInstance = await Personalize.init(projectUid);
 
-    if (process.env.NODE_ENV === 'development') {
+    if (DEBUG.enabled && DEBUG.personalize) {
       console.log('✓ Contentstack Personalize SDK initialized successfully.');
       console.log('Visitor ID:', personalizeInstance.getUserId());
     }

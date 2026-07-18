@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { usePersonalize } from "@/hooks/usePersonalize";
 import { PageHero } from "./PageHero";
 import Link from "next/link";
 import { HeroCMS } from "@/lib/types";
-import { getBehaviorState } from "@/lib/behavior/engine";
+import { DEBUG } from "@/lib/debug";
 
 interface PersonalizedHeroProps {
   fallback: HeroCMS;
@@ -15,8 +15,6 @@ export function PersonalizedHero({ fallback }: PersonalizedHeroProps) {
   const { sdk, loading } = usePersonalize();
   const [hero, setHero] = useState<HeroCMS>(fallback);
   const [isPersonalized, setIsPersonalized] = useState(false);
-  const lastLoggedAliasesRef = useRef<string>("");
-  const lastLoggedExperiencesRef = useRef<string>("");
 
   useEffect(() => {
     if (loading || !sdk) return;
@@ -24,24 +22,42 @@ export function PersonalizedHero({ fallback }: PersonalizedHeroProps) {
     const aliases = sdk.getVariantAliases();
     const experiences = sdk.getExperiences();
 
-    const aliasesKey = aliases.join(",");
-    const experiencesKey = JSON.stringify(
-      experiences.map((exp) => ({
-        shortUid: exp.shortUid,
-        activeVariantShortUid: exp.activeVariantShortUid,
-      }))
-    );
+    if (DEBUG.enabled && DEBUG.personalize) {
+      console.groupCollapsed("[Personalize Hero Debug]");
+      console.log("Resolved Variant Aliases:", aliases);
+      console.log("Total Experiences Found:", experiences.length);
 
-    const hasChanged =
-      aliasesKey !== lastLoggedAliasesRef.current ||
-      experiencesKey !== lastLoggedExperiencesRef.current;
+      experiences.forEach((exp, index) => {
+        console.groupCollapsed(`Experience Resolution #${index + 1}: ${exp.shortUid}`);
+        
+        console.log("Experience Name:", (exp as any).name ?? "N/A");
+        console.log("Experience Short UID:", exp.shortUid);
+        console.log("Experience Status:", (exp as any).status ?? "N/A");
+        console.log("Active Variant Short UID:", exp.activeVariantShortUid ?? "None (No active variant resolved)");
+        console.log("Active Variant Alias:", (exp as any).activeVariantAlias ?? "N/A");
+        console.log("All Variants:", (exp as any).variants ?? "N/A");
+        console.log("Audience Information:", (exp as any).audience ?? "N/A");
+        console.log("Entry Variant Information:", (exp as any).entryVariant ?? "N/A");
+        console.log("Entry Variant Alias:", (exp as any).entryVariantAlias ?? "N/A");
+        console.log("Matching Status:", (exp as any).matchingStatus ?? (exp as any).isMatched ?? "N/A");
+        console.log("Eligibility Status:", (exp as any).eligibilityStatus ?? (exp as any).isEligible ?? "N/A");
+        
+        console.log("Resolution / Evaluation Flags:", {
+          isActive: (exp as any).isActive,
+          isVariantResolved: !!exp.activeVariantShortUid,
+          hasFallback: (exp as any).hasFallback,
+          audienceMatched: (exp as any).audienceMatched,
+        });
+
+        console.log("Raw Experience Object:");
+        console.dir(exp);
+        
+        console.groupEnd();
+      });
+      console.groupEnd();
+    }
 
     if (aliases && aliases.length > 0) {
-      if (hasChanged) {
-        lastLoggedAliasesRef.current = aliasesKey;
-        lastLoggedExperiencesRef.current = experiencesKey;
-      }
-
       // Fetch personalized hero content
       fetch(`/api/personalized-hero?aliases=${encodeURIComponent(aliases.join(","))}`)
         .then((res) => res.json())
@@ -50,29 +66,9 @@ export function PersonalizedHero({ fallback }: PersonalizedHeroProps) {
             setHero(data.hero);
             setIsPersonalized(true);
 
-            if (process.env.NODE_ENV === "development" && hasChanged) {
-              const exp = experiences[0] || { shortUid: "N/A", activeVariantShortUid: null };
-              const resolvedPersona = getBehaviorState().currentPersona;
-
-              console.log(
-                `%c🎯 Personalization\n\n` +
-                `Resolved Experience:\n` +
-                `${(exp as any).name || "Homepage Hero"}\n\n` +
-                `Matched Audience:\n` +
-                `${(exp as any).audienceName || (exp as any).audience?.name || (resolvedPersona ? `${resolvedPersona} Audience` : "N/A")}\n\n` +
-                `Active Variant:\n` +
-                `${(exp as any).activeVariantName || (exp.activeVariantShortUid === "0" ? "Default Hero" : resolvedPersona ? `${resolvedPersona} Hero` : "N/A")}\n\n` +
-                `Variant Alias:\n` +
-                `${aliases.join(", ")}\n\n` +
-                `Status:\n` +
-                `✓ Personalized content loaded\n\n` +
-                `===========================================================`,
-                "color: #ec4899;"
-              );
-            }
-
             // Trigger SDK impression logs for the active experiences at the edge
             try {
+              const experiences = sdk.getExperiences();
               experiences.forEach((exp) => {
                 if (exp.activeVariantShortUid) {
                   sdk.triggerImpression(exp.shortUid);
@@ -90,36 +86,8 @@ export function PersonalizedHero({ fallback }: PersonalizedHeroProps) {
             console.error("[Personalize Hero] Failed to load personalized variant:", err);
           }
         });
-    } else {
-      if (hasChanged) {
-        lastLoggedAliasesRef.current = aliasesKey;
-        lastLoggedExperiencesRef.current = experiencesKey;
-
-        // Reset to default CMS hero content
-        setHero(fallback);
-        setIsPersonalized(false);
-
-        if (process.env.NODE_ENV === "development") {
-          const exp = experiences[0] || { shortUid: "N/A", activeVariantShortUid: null };
-          console.log(
-            `%c🎯 Personalization\n\n` +
-            `Resolved Experience:\n` +
-            `${(exp as any).name || "Homepage Hero"}\n\n` +
-            `Matched Audience:\n` +
-            `Default Audience\n\n` +
-            `Active Variant:\n` +
-            `Default Hero\n\n` +
-            `Variant Alias:\n` +
-            `None\n\n` +
-            `Status:\n` +
-            `✓ Fallback content loaded\n\n` +
-            `===========================================================`,
-            "color: #ec4899;"
-          );
-        }
-      }
     }
-  }, [sdk, loading, fallback]);
+  }, [sdk, loading]);
 
   const heroHeading = hero.heading || fallback.heading;
   const heroSubheading = hero.subheading || fallback.subheading;

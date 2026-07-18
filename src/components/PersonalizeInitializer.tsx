@@ -1,9 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Sdk } from '@contentstack/personalize-edge-sdk/dist/sdk';
 import { getPersonalizeSdk, refreshPersonalizeSdk } from '@/lib/personalize';
 import { getBehaviorState, subscribeToBehavior } from '@/lib/behavior/engine';
+import { DEBUG } from '@/lib/debug';
 
 interface PersonalizeContextType {
   sdk: Sdk | null;
@@ -22,7 +23,6 @@ export const PersonalizeContext = createContext<PersonalizeContextType>({
 export function PersonalizeProvider({ children }: { children: React.ReactNode }) {
   const [sdk, setSdk] = useState<Sdk | null>(null);
   const [loading, setLoading] = useState(true);
-  const lastLoggedPersonaRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     let active = true;
@@ -49,28 +49,24 @@ export function PersonalizeProvider({ children }: { children: React.ReactNode })
     };
   }, []);
 
+  // Synchronize resolved local persona to Contentstack Personalize Edge custom attributes
   useEffect(() => {
     if (!sdk) return;
 
+    let lastSyncedPersona: string | null | undefined = undefined;
+
     const syncPersona = (persona: string | null) => {
-      if (persona !== lastLoggedPersonaRef.current) {
-        const previousPersona = lastLoggedPersonaRef.current;
-        lastLoggedPersonaRef.current = persona;
+      if (persona !== lastSyncedPersona) {
+        lastSyncedPersona = persona;
 
         sdk
           .set({ visitor_persona: persona })
           .then(async () => {
-            if (process.env.NODE_ENV === "development") {
+            if (DEBUG.enabled && DEBUG.personalize) {
               console.log(
-                `%c🔄 Persona Sync\n\n` +
-                `Previous Persona:\n` +
-                `${previousPersona !== undefined ? (previousPersona || "None") : "None"}\n\n` +
-                `New Persona:\n` +
-                `${persona || "None"}\n\n` +
-                `Status:\n` +
-                `✓ Synced to Contentstack Personalize\n\n` +
-                `-----------------------------------------------------------`,
-                "color: #2563eb;"
+                `%c[Personalize Sync]`,
+                "color: #2563eb; font-weight: bold;",
+                `Synced persona attribute: "${persona}". Re-evaluating manifest...`
               );
             }
 

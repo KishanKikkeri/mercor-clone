@@ -1,6 +1,7 @@
 import { BehaviorState, Interaction, InteractionType } from "./types";
 import { loadBehaviorState, saveBehaviorState } from "./storage";
 import { updateScore } from "./scoreManager";
+import { DEBUG } from "../debug";
 
 let currentState: BehaviorState = loadBehaviorState();
 const listeners = new Set<(state: BehaviorState) => void>();
@@ -38,21 +39,19 @@ export function recordBehaviorInteraction(
     });
 
     // Logging in development mode only
-    if (process.env.NODE_ENV === "development") {
+    if (DEBUG.enabled && DEBUG.behavior) {
       console.log(
-        `%c===========================================================\n🧠 Behavior Engine\n===========================================================\n\n` +
-        `Interaction: ${type}\n\n` +
-        `Payload:\n` +
-        JSON.stringify(payload || {}, null, 2) + `\n\n` +
-        `Updated Scores:\n` +
-        `AI Engineer: ${currentState.aiEngineer}\n` +
-        `Frontend Developer: ${currentState.frontendDeveloper}\n` +
-        `Backend Developer: ${currentState.backendDeveloper}\n` +
-        `Full Stack Developer: ${currentState.fullStackDeveloper}\n\n` +
-        `Current Persona:\n` +
-        `${currentState.currentPersona || "None"}\n\n` +
-        `-----------------------------------------------------------`,
-        "color: #10b981;"
+        `%c[Behavior Engine]`,
+        "color: #10b981; font-weight: bold;",
+        `\nInteraction: ${type}\nPayload:`,
+        payload || {},
+        `\n\nUpdated Scores:\n`,
+        `AI Engineer:         ${currentState.aiEngineer}\n`,
+        `Frontend Developer:  ${currentState.frontendDeveloper}\n`,
+        `Backend Developer:   ${currentState.backendDeveloper}\n`,
+        `Full Stack Developer: ${currentState.fullStackDeveloper}\n`,
+        `Total Interactions:   ${currentState.totalInteractions}\n`,
+        `Current Persona:      ${currentState.currentPersona || "None (Below Threshold)"}`
       );
     }
   } catch (error) {

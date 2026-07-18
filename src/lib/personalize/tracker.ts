@@ -2,6 +2,7 @@ import { getPersonalizeSdk } from "../personalize";
 import { PersonalizeEventKey } from "./constants";
 import { EventPayloads } from "./events";
 import { recordBehaviorInteraction } from "@/lib/behavior/engine";
+import { DEBUG } from "../debug";
 
 /**
  * Triggers an event on Contentstack Personalize.
@@ -42,7 +43,7 @@ export async function trackEvent<K extends PersonalizeEventKey>(
     // Trigger the event
     await sdk.triggerEvent(eventKey);
 
-    if (process.env.NODE_ENV === "development") {
+    if (DEBUG.enabled && DEBUG.events) {
       console.log(
         `%c[Personalize]`,
         "color: #9333ea; font-weight: bold;",
