@@ -1,10 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { Sdk } from '@contentstack/personalize-edge-sdk/dist/sdk';
 import { getPersonalizeSdk, refreshPersonalizeSdk } from '@/lib/personalize';
 import { getBehaviorState, subscribeToBehavior } from '@/lib/behavior/engine';
-import { DEBUG } from '@/lib/debug';
 
 interface PersonalizeContextType {
   sdk: Sdk | null;
@@ -23,6 +22,7 @@ export const PersonalizeContext = createContext<PersonalizeContextType>({
 export function PersonalizeProvider({ children }: { children: React.ReactNode }) {
   const [sdk, setSdk] = useState<Sdk | null>(null);
   const [loading, setLoading] = useState(true);
+  const lastSyncedPersonaRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     let active = true;
@@ -53,16 +53,14 @@ export function PersonalizeProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!sdk) return;
 
-    let lastSyncedPersona: string | null | undefined = undefined;
-
     const syncPersona = (persona: string | null) => {
-      if (persona !== lastSyncedPersona) {
-        lastSyncedPersona = persona;
+      if (persona !== lastSyncedPersonaRef.current) {
+        lastSyncedPersonaRef.current = persona;
 
         sdk
-          .set({ visitor_persona: persona ?? "" })
+          .set({ visitor_persona: persona })
           .then(async () => {
-            if (DEBUG.enabled && DEBUG.personalize) {
+            if (process.env.NODE_ENV === "development") {
               console.log(
                 `%c[Personalize Sync]`,
                 "color: #2563eb; font-weight: bold;",
