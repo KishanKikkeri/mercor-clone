@@ -59,7 +59,15 @@ export async function getPersonalizeSdk(attributes?: Record<string, any>): Promi
 
     return personalizeInstance;
   } catch (error) {
-    console.error('Failed to initialize Contentstack Personalize SDK:', error);
+    if (process.env.NODE_ENV === 'development') {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const isNetworkError = errorMsg.includes('Failed to fetch') || errorMsg.includes('fetch');
+      if (isNetworkError) {
+        console.warn('⚠️ Contentstack Personalize Edge API is unreachable (Failed to fetch). Running in offline/fallback mode.');
+      } else {
+        console.error('Failed to initialize Contentstack Personalize SDK:', error);
+      }
+    }
     return null;
   } finally {
     isInitializing = false;
