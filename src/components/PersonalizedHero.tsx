@@ -5,7 +5,6 @@ import { usePersonalize } from "@/hooks/usePersonalize";
 import { PageHero } from "./PageHero";
 import Link from "next/link";
 import { HeroCMS } from "@/lib/types";
-import { DEBUG } from "@/lib/debug";
 
 interface PersonalizedHeroProps {
   fallback: HeroCMS;
@@ -22,13 +21,16 @@ export function PersonalizedHero({ fallback }: PersonalizedHeroProps) {
     const aliases = sdk.getVariantAliases();
     const experiences = sdk.getExperiences();
 
-    if (DEBUG.enabled && DEBUG.personalize) {
-      console.groupCollapsed("[Personalize Hero Debug]");
-      console.log("Resolved Variant Aliases:", aliases);
-      console.log("Total Experiences Found:", experiences.length);
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `%c[Personalize Debug - Summary]`,
+        "color: #ec4899; font-weight: bold;",
+        `\nResolved Variant Aliases:`, aliases,
+        `\nTotal Experiences Found:`, experiences.length
+      );
 
       experiences.forEach((exp, index) => {
-        console.groupCollapsed(`Experience Resolution #${index + 1}: ${exp.shortUid}`);
+        console.group(`[Personalize Experience Debug #${index + 1}: ${exp.shortUid}]`);
         
         console.log("Experience Name:", (exp as any).name ?? "N/A");
         console.log("Experience Short UID:", exp.shortUid);
@@ -54,7 +56,6 @@ export function PersonalizedHero({ fallback }: PersonalizedHeroProps) {
         
         console.groupEnd();
       });
-      console.groupEnd();
     }
 
     if (aliases && aliases.length > 0) {

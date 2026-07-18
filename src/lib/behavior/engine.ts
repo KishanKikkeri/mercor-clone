@@ -1,7 +1,6 @@
 import { BehaviorState, Interaction, InteractionType } from "./types";
 import { loadBehaviorState, saveBehaviorState } from "./storage";
 import { updateScore } from "./scoreManager";
-import { DEBUG } from "../debug";
 
 let currentState: BehaviorState = loadBehaviorState();
 const listeners = new Set<(state: BehaviorState) => void>();
@@ -39,7 +38,7 @@ export function recordBehaviorInteraction(
     });
 
     // Logging in development mode only
-    if (DEBUG.enabled && DEBUG.behavior) {
+    if (process.env.NODE_ENV === "development") {
       console.log(
         `%c[Behavior Engine]`,
         "color: #10b981; font-weight: bold;",
