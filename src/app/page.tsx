@@ -6,6 +6,7 @@ import { CategoryCard } from "@/components/CategoryCard";
 import { JobCard } from "@/components/JobCard";
 import { CTASection } from "@/components/CTASection";
 import { TrackHomepage } from "@/components/TrackHomepage";
+import { PersonalizedFeaturedJobs } from "@/components/PersonalizedFeaturedJobs";
 import {
   fetchCategories,
   fetchJobs,
@@ -99,31 +100,10 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="border-t border-purple-50 bg-purple-50/10">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="flex items-end justify-between gap-6">
-            <SectionHeader
-              title={featuredTitle}
-              subtitle={featuredSubtitle}
-            />
-            <Link
-              href="/jobs"
-              className="hidden shrink-0 text-sm font-bold text-purple-600 hover:text-purple-700 transition-colors sm:inline"
-            >
-              View all jobs →
-            </Link>
-          </div>
-          {displayJobs.length === 0 ? (
-            <div className="mt-10 text-center text-slate-500 py-10">No featured jobs found.</div>
-          ) : (
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {displayJobs.map((j) => (
-                <JobCard key={j.id} job={j} />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+      <PersonalizedFeaturedJobs
+        fallback={featuredJobsData}
+        defaultJobs={displayJobs}
+      />
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <SectionHeader
