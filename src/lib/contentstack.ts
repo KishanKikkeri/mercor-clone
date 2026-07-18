@@ -302,7 +302,7 @@ interface CSFeaturedJobsEntry {
 export async function getHero(variantAliases?: string[]): Promise<HeroCMS | null> {
   const headers: Record<string, string> = {};
   if (variantAliases && variantAliases.length > 0) {
-    headers["x-cs-personalize-variant-alias"] = variantAliases.join(",");
+    headers["x-cs-variant-uid"] = variantAliases.join(",");
   }
 
   const entries = await csGet<CSHeroEntry>("hero", {}, headers);
@@ -318,8 +318,13 @@ export async function getHero(variantAliases?: string[]): Promise<HeroCMS | null
   };
 }
 
-export async function getFeaturedJobs(): Promise<FeaturedJobsCMS | null> {
-  const entries = await csGet<CSFeaturedJobsEntry>("featured_jobs", { "include[]": "jobs" });
+export async function getFeaturedJobs(variantAliases?: string[]): Promise<FeaturedJobsCMS | null> {
+  const headers: Record<string, string> = {};
+  if (variantAliases && variantAliases.length > 0) {
+    headers["x-cs-variant-uid"] = variantAliases.join(",");
+  }
+
+  const entries = await csGet<CSFeaturedJobsEntry>("featured_jobs", { "include[]": "jobs" }, headers);
   const entry = entries[0];
   if (!entry) return null;
 
