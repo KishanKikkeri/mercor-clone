@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && next build && esbuild functions/[proxy].edge.source.js --bundle --platform=browser --format=esm --minify --outfile=functions/[proxy].edge.js",
     "start": "next start",
     "lint": "eslint .",
     "format": "prettier --write ."
@@ -80,7 +80,8 @@
     "prettier": "^3.7.3",
     "prisma": "^7.8.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.56.1"
+    "typescript-eslint": "^8.56.1",
+    "esbuild": "^0.25.0"
   },
   "overrides": {
     "postcss": "^8.5.16"
