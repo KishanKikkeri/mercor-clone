@@ -29,7 +29,11 @@ export function PersonalizeProvider({ children }: { children: React.ReactNode })
 
     async function initialize() {
       try {
-        const instance = await getPersonalizeSdk();
+        const initialState = getBehaviorState();
+        const persona = initialState.currentPersona ?? null;
+        const attributes = persona ? { visitor_persona: persona } : undefined;
+
+        const instance = await getPersonalizeSdk(attributes);
         if (active) {
           setSdk(instance);
         }
@@ -69,7 +73,7 @@ export function PersonalizeProvider({ children }: { children: React.ReactNode })
             }
 
             // Force refresh of the Personalize SDK manifest to pull newly computed experiences
-            const refreshedSdk = await refreshPersonalizeSdk();
+            const refreshedSdk = await refreshPersonalizeSdk(persona ? { visitor_persona: persona } : undefined);
             if (refreshedSdk) {
               setSdk(refreshedSdk);
             }

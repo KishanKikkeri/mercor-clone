@@ -1,6 +1,5 @@
 import Personalize from '@contentstack/personalize-edge-sdk';
 import { Sdk } from '@contentstack/personalize-edge-sdk/dist/sdk';
-import { DEBUG } from './debug';
 
 let personalizeInstance: Sdk | null = null;
 let isInitializing = false;
@@ -9,7 +8,7 @@ let isInitializing = false;
  * Singleton client-side loader for Contentstack Personalize SDK.
  * Ensures the SDK is only initialized once in browser environments.
  */
-export async function getPersonalizeSdk(): Promise<Sdk | null> {
+export async function getPersonalizeSdk(attributes?: Record<string, any>): Promise<Sdk | null> {
   // Prevent server-side initialization to avoid cross-request data leaks
   if (typeof window === 'undefined') {
     return null;
@@ -45,10 +44,15 @@ export async function getPersonalizeSdk(): Promise<Sdk | null> {
       Personalize.setEdgeApiUrl(edgeApiUrl);
     }
 
-    // Initialize Contentstack Personalize Client
-    personalizeInstance = await Personalize.init(projectUid);
+    const initOptions: any = {};
+    if (attributes) {
+      initOptions.liveAttributes = attributes;
+    }
 
-    if (DEBUG.enabled && DEBUG.personalize) {
+    // Initialize Contentstack Personalize Client
+    personalizeInstance = await Personalize.init(projectUid, initOptions);
+
+    if (process.env.NODE_ENV === 'development') {
       console.log('✓ Contentstack Personalize SDK initialized successfully.');
       console.log('Visitor ID:', personalizeInstance.getUserId());
     }
@@ -67,7 +71,7 @@ export async function getPersonalizeSdk(): Promise<Sdk | null> {
  * Resets the local singleton cache, clears the client manifest cookie,
  * and fetches the latest computed manifest from Contentstack Personalize Edge.
  */
-export async function refreshPersonalizeSdk(): Promise<Sdk | null> {
+export async function refreshPersonalizeSdk(attributes?: Record<string, any>): Promise<Sdk | null> {
   if (typeof window === 'undefined') {
     return null;
   }
@@ -85,5 +89,5 @@ export async function refreshPersonalizeSdk(): Promise<Sdk | null> {
   }
 
   // Re-fetch manifest from edge
-  return getPersonalizeSdk();
+  return getPersonalizeSdk(attributes);
 }
